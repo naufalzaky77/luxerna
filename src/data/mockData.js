@@ -2,72 +2,84 @@
 export const LAYOUTS = [
   {
     id: "1foto",
-    label: "1 Foto (Full)",
+    label: "1 Foto",
+    sublabel: "",
     shots: 1,
     orientation: "landscape",
     icon: (active) => (
-       <svg width="64" height="42" viewBox="0 0 64 42">
-        <rect x="2" y="2" width="60" height="38" rx="3"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06)"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-      </svg>
-      ),
+      <div style={{ height: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="64" height="42" viewBox="0 0 64 42">
+          <rect x="2" y="2" width="60" height="38" rx="3"
+            fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+            strokeWidth="1.5"/>
+        </svg>
+      </div>
+    ),
   },
   {
     id: "2strip",
-    label: "2 Foto (Strip)",
+    label: "2 Foto",
+    sublabel: "(Strip)",
     shots: 2,
     orientation: "portrait",
     icon: (active) => (
-      <svg width="48" height="74" viewBox="0 0 38 54">
-        <rect x="2" y="2" width="34" height="23" rx="3"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06)"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-        <rect x="2" y="32" width="34" height="23" rx="3"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06)"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-      </svg>
+      <div style={{ height: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="48" height="74" viewBox="0 0 38 54">
+          <rect x="2" y="2" width="34" height="23" rx="3"
+            fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+            strokeWidth="1.5"/>
+          <rect x="2" y="32" width="34" height="23" rx="3"
+            fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+            strokeWidth="1.5"/>
+        </svg>
+      </div> 
     ),
   },
   {
     id: "3strip",
-    label: "3 Foto (Strip)",
+    label: "3 Foto",
+    sublabel: "(Strip)",
     shots: 3,
     orientation: "portrait",
     icon: (active) => (
-      <svg width="38" height="78" viewBox="0 0 38 96">
-        {[0,1,2].map(i => (
-          <rect key={i} x="2" y={2 + i * 30} width="34" height="24" rx="3"
-            fill={active ? "var(--black" : "rgba(255,255,255,.06)"}
-            stroke={active ? "var(--black" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-        ))}
-      </svg>
+      <div style={{ height: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="38" height="78" viewBox="0 0 38 96">
+          {[0,1,2].map(i => (
+            <rect key={i} x="2" y={2 + i * 30} width="34" height="24" rx="3"
+              fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+              strokeWidth="1.5"/>
+          ))}
+        </svg>
+      </div>
     ),
   },
   {
     id: "grid",
-    label: "4 Foto (Grid)",
+    label: "4 Foto",
+    sublabel: "",
     shots: 4,
     orientation: "landscape",
     icon: (active) => (
-      <svg width="52" height="40" viewBox="0 0 52 40">
-        {/* 1 besar — kiri atas */}
-        <rect x="2" y="2" width="22" height="20" rx="2"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06)"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-        {/* 2 kecil — bawah kiri */}
-        <rect x="2" y="26" width="22" height="12" rx="2"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06))"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-        {/* 3 kecil — atas kanan */}
-        <rect x="28" y="2" width="22" height="17" rx="2"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06))"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-        {/* 4 kecil — bawah kanan */}
-        <rect x="28" y="23" width="22" height="15" rx="2"
-          fill={active ? "var(--black)" : "rgba(255,255,255,.06)"}
-          stroke={active ? "var(--black)" : "rgba(255,255,255,.06)"} strokeWidth="1.5"/>
-      </svg>
+      <div style={{ height: "80px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="52" height="40" viewBox="0 0 52 40">
+          {/* 1 besar — kiri atas */}
+          <rect x="2" y="2" width="22" height="20" rx="2"
+           fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+           strokeWidth="1.5"/>
+          {/* 2 kecil — bawah kiri */}
+         <rect x="2" y="26" width="22" height="12" rx="2"
+            fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+            strokeWidth="1.5"/>
+          {/* 3 kecil — atas kanan */}
+          <rect x="28" y="2" width="22" height="17" rx="2"
+            fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+            strokeWidth="1.5"/>
+          {/* 4 kecil — bawah kanan */}
+         <rect x="28" y="23" width="22" height="15" rx="2"
+            fill={active ? "rgba(65,139,250,.5)" : "rgba(0, 0, 0, 0.2)"}
+            strokeWidth="1.5"/>
+       </svg>
+      </div>
     ),
   },
 ];

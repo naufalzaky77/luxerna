@@ -51,8 +51,8 @@ export default function LayoutPreview({ layout, templatePreview }) {
           flexShrink: 0,
         }}
       >
-        {cell("1", { height: bigH, borderRadius: "4px 0 0 0" })}
-        {cell("2", { height: smallH, borderRadius: "0 0 0 4px" })}
+        {cell("1", { height: bigH, borderRadius: "0 0 0 0" })}
+        {cell("2", { height: smallH, borderRadius: "0 0 0 0" })}
       </div>
       <div
         style={{
@@ -63,8 +63,8 @@ export default function LayoutPreview({ layout, templatePreview }) {
           flexShrink: 0,
         }}
       >
-        {cell("3", { height: smallH, borderRadius: "0 4px 0 0" })}
-        {cell("4", { height: smallH, borderRadius: "0 0 4px 0" })}
+        {cell("3", { height: smallH, borderRadius: "0 0 0 0" })}
+        {cell("4", { height: smallH, borderRadius: "0 0 0 0" })}
       </div>
     </div>
   );
@@ -76,7 +76,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
     if (layout.id === "1foto")
       return (
         <div style={{ width: sW, height: sH }}>
-          {cell("1", { width: "100%", height: "100%", borderRadius: "4px" })}
+          {cell("1", { width: "100%", height: "100%", borderRadius: "0" })}
         </div>
       );
     const count = layout.id === "2strip" ? 2 : 3;
@@ -94,7 +94,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
           cell(String(i + 1), {
             flex: 1,
             borderRadius:
-              i === 0 ? "4px 4px 0 0" : i === count - 1 ? "0 0 4px 4px" : "0",
+              i === 0 ? "0 0 0 0" : i === count - 1 ? "0 0 0 0" : "0",
           }),
         )}
       </div>
@@ -110,7 +110,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
       style={{
         width: W,
         height: H,
-        borderRadius: "10px",
+        // borderRadius: "10px",
         overflow: "hidden",
         border: "1px solid var(--bdr2)",
         position: "relative",
@@ -140,7 +140,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
           right: "8px",
           background: "rgba(0,0,0,.8)",
           border: "1px solid rgba(201,168,76,.3)",
-          borderRadius: "5px",
+          // borderRadius: "5px",
           padding: "2px 7px",
           color: "var(--gold)",
           fontSize: "9px",
