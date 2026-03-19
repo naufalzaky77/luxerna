@@ -23,6 +23,8 @@ export default function EventNameInput({
       >
         NAMA ACARA
       </div>
+
+      {/* Bagian Bar Input */}
       <input
         type="text"
         value={eventName}

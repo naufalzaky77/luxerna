@@ -1,14 +1,14 @@
 import { G } from "../styles/global.css";
 import { buildCssVars } from "../luxernaTheme";
-import TimeDate from "../components/TimeDate";
-import EventNameInput from "../components/EventNameInput";
-import StartButton from "../components/StartButton";
-import AdminButton from "../components/AdminButton";
-import SessionHeader from "../components/SessionHeader";
-import LayoutSelect from "../components/LayoutSelect";
-import CameraSelect from "../components/CameraSelect";
-import FrameUpload from "../components/FrameUpload";
-import PreviewSet from "../components/PreviewSet";
+import TimeDate from "../components/HoTimeDate";
+import EventNameInput from "../components/HoEventNameInput";
+import StartButton from "../components/HoStartButton";
+import AdminButton from "../components/HoAdminButton";
+import SessionHeader from "../components/HoSessionHeader";
+import LayoutSelect from "../components/HoLayoutSelect";
+import CameraSelect from "../components/HoCameraSelect";
+import FrameUpload from "../components/HoFrameUpload";
+import PreviewSet from "../components/HoPreviewSet";
 
 export default function Home({
   settings,

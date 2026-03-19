@@ -14,7 +14,7 @@ export default function LayoutSelect({
     <div>
       <div
         style={{
-          color: "var(--black)",
+          color: "var(--primary)",
           fontFamily: "var(--f)",
           fontSize: "var(--fs-h3)",
           fontWeight: "var(--fw-medium)",
@@ -24,6 +24,8 @@ export default function LayoutSelect({
       >
         SUSUNAN FOTO
       </div>
+
+      {/* Bagian Kolom Jenis Layout */}
       <div
         style={{
           display: "grid",

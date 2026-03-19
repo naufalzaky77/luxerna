@@ -32,7 +32,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
     <div style={{ position: "relative" }}>
       <div
         style={{
-          color: "var(--black)",
+          color: "var(--primary)",
           fontFamily: "var(--f)",
           fontSize: "var(--fs-h3)",
           fontWeight: "var(--fw-medium)",
@@ -42,6 +42,8 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
       >
         PERANGKAT KAMERA
       </div>
+
+      {/* Bagian Bar Kamera */}
       <button
         onClick={() => !locked && scanCameras()}
         style={{
@@ -69,7 +71,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
             className={selectedCamera ? "ic-blue" : "ic-grey"}
             style={{ width: "1.5rem", height: "1.5rem" }}
           />
-          <span style={{ fontSize: "12px" }}>
+          <span style={{ fontFamily: "var(--f)", fontSize: "12px" }}>
             {cameraScanning
               ? "Mencari kamera..."
               : selectedCamera
@@ -91,6 +93,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
         />
       </button>
 
+      {/* Bagian Dropdown Isi Bar Kamera */}
       {cameraDropdownOpen && !locked && (
         <div
           style={{

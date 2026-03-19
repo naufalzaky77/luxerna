@@ -84,6 +84,22 @@ export const G = /*css*/`
     from{transform: rotate(0deg);} 
     to{transform: rotate(360deg);}
   }
+  @keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(65,139,250,.4); }
+    100% { box-shadow: 0 0 0 40px rgba(65,139,250,0); }
+  }
+  @keyframes zoomIn {
+    0% { transform: scale(1) }
+    100% { transform: scale(1.5) }
+  }
+  @keyframes zoomOut {
+    0% { transform: scale(1.5) }
+    100% { transform: scale(1) }
+  }
+  @keyframes slideLeft {
+    from{transform: translateX(-100%);}
+    to{transform: translateX(0);}
+  }
 
 /* ─── ANIMATION ────────────────── ANIMATION ───────────────────────────────── ANIMATION ───────────────────────────── ANIMATION ─────────────────────────────────── ANIMATION ───────── */
 /* ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -107,12 +123,20 @@ export const G = /*css*/`
   .ic-blue {
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);
   }
+
   .ic-grey {
     filter: brightness(0) opacity(0.4);
   }
+
   .ic-white {
     filter: brightness(0) invert(1);
   }
+
+  .ic-green {
+    filter: brightness(0) saturate(100%) invert(52%) sepia(97%) saturate(500%) hue-rotate(87deg) brightness(95%) contrast(101%);
+  }
+
+  
 /* ──────────────────────────────────────────────────────────────── */
 
 
@@ -218,6 +242,182 @@ export const G = /*css*/`
     filter: brightness(0) invert(1);
     animation: spinLogo .6s ease forwards;
   }
+
+  .back-btn {
+    background: transparent;
+    border:.1rem solid var(--secondary);
+    border-radius: .5rem;
+    color: var(--secondary);
+    font-family: var(--f);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-semiBold);
+    letter-spacing: .15rem;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+  }
+  .back-btn:hover {
+    background: var(--secondary);
+    color: var(--white) !important;
+    box-shadow: 0 0 15px rgba(65,139,250,.5), 0 0 30px rgba(65,139,250,.3), 0 0 60px rgba(65,139,250,.15);
+  }
+  .back-btn img {
+    position: relative;
+    z-index: 2;
+    filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
+    transition: filter .35s;
+  }
+  .back-btn:hover img {
+    filter: brightness(0) invert(1); 
+  }
+
+  .snap-btn {
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    box-shadow: inset 0 0 0 6px var(--secondary);
+    color: var(--secondary);
+    cursor: pointer;
+    font-family: var(--f);
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-black);
+    letter-spacing: .15rem;
+    transition: color .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .9rem;
+  }
+  .snap-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: var(--secondary);
+    transition: left .35s ease;
+    z-index: 0;
+  }
+  .snap-btn:hover::before {
+    left: 0;
+  }
+  .snap-btn:hover {
+    color: var(--white);
+  }
+  .snap-btn span, .snap-btn img {
+    position: relative;
+    z-index: 2;
+  }
+  .snap-btn img {
+    position: relative;
+    z-index: 2;
+    filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
+    transition: filter .35s;
+    animation: zoomOut .3s ease forwards;
+  }
+  .snap-btn:hover img {
+    filter: brightness(0) invert(1); 
+    animation: zoomIn .3s ease forwards;
+  }
+
+  .snap-btnG {
+    position: relative;
+    overflow: hidden;
+    background: rgba(0,0,0,.4);
+    border: none;
+    color: rgba(255,255,255,.4);
+    cursor: not-allowed;
+    font-family: var(--f);
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-black);
+    letter-spacing: .15rem;
+    transition: color .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .snap-btnG img {
+    position: relative;
+    z-index: 2;
+    filter: brightness(0) invert(1) opacity(0.4);  
+    transition: filter .35s;
+  }
+
+  .pros-btn {
+    background: transparent;
+    border:.1rem solid var(--secondary);
+    border-radius: .5rem;
+    color: var(--secondary);
+    font-family: var(--f);
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-semiBold);
+    letter-spacing: .15rem;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pros-btn:hover {
+    background: var(--secondary);
+    color: var(--white) !important;
+    box-shadow: 0 0 15px rgba(65,139,250,.5), 0 0 30px rgba(65,139,250,.3), 0 0 60px rgba(65,139,250,.15);
+  }
+
+  .procs-btn {
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    box-shadow: inset 0 0 0 3px var(--secondary);
+    color: var(--secondary);
+    cursor: pointer;
+    font-family: var(--f);
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-black);
+    letter-spacing: .15rem;
+    transition: color .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .3rem;
+  }
+  .procs-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: var(--secondary);
+    transition: left .35s ease;
+    z-index: 0;
+  }
+  .procs-btn:hover::before {
+    left: 0;
+  }
+  .procs-btn:hover {
+    color: var(--white);
+  }
+  .procs-btn span, .procs-btn img {
+    position: relative;
+    z-index: 2;
+  }
+  .procs-btn img {
+    position: relative;
+    z-index: 2;
+    filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
+    transition: filter .35s;
+    animation: spinLogoReverse .3s ease forwards;
+  }
+  .procs-btn:hover img {
+    filter: brightness(0) invert(1); 
+    animation: spinLogo .3s ease forwards;
+  }
+
+  
+  
+  
+  
 /* ──────────────────────────────────────────────────────────────── */
 
 
@@ -254,6 +454,35 @@ export const G = /*css*/`
   .upload-zone:hover .up-text {
     color: var(--secondary);
   }
+
+  .pulse-ring {
+    animation: pulseRing .8s ease-out infinite;
+  }
+
+  
+/* ──────────────────────────────────────────────────────────────── */
+
+
+/* ─── Fungsi ───────────────────────────────────────────────────── */
+.done-yes {
+    width: 100%;
+    background: rgba(0,204,7,.05);
+    border: .15rem solid var(--green);
+    border-radius: .5rem;
+    display: flex;
+    align-items: center;
+    padding: .5rem 1rem;
+    gap: 1rem;
+    animation: slideLeft .5s ease forwards;
+  }
+
+.scroll {
+  overflow-y:auto;
+  scrollbar-width:Thin;
+  scrollbar-color:var(--secondary) transparent;
+}
+
+
 /* ──────────────────────────────────────────────────────────────── */
 
 
@@ -271,6 +500,13 @@ export const G = /*css*/`
   .cam-scan:hover img {
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);
   }
+/* ──────────────────────────────────────────────────────────────── */
+
+
+/* ─── Input Area ───────────────────────────────────────────────── */
+input::placeholder,textarea::placeholder {
+  color:rgba(0, 0, 0, 0.2);
+}
 /* ──────────────────────────────────────────────────────────────── */
 
 
@@ -306,8 +542,8 @@ export const G = /*css*/`
     color:var(--white);font-family:var(--f);font-size:13px;padding:11px 14px;width:100%;outline:none;
     transition:border-color .2s;}
   input:focus,textarea:focus{border-color:var(--secondary);background:rgba(65,139,250,.06);}
-  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.3);}
-  .scroll{overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(65,139,250,.3) transparent;}
+  
+  
 
   .divider{border:none;border-top:1px solid rgba(65,139,250,1);margin:0;}
 

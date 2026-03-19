@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { G } from "../styles/global.css";
 import { buildCssVars } from "../luxernaTheme";
 import { GUEST_DB } from "../data/mockData";
+import HeadBar from "../components/OtHeadBar";
 
 function CompositePreview({ photos, layout, templatePreview }) {
   const isLand = layout.orientation === "landscape";
@@ -140,6 +141,7 @@ export default function Output({
   // ── Print state (printers/selectedPrinter/printerLocked from App props) ──
   const [printerDropOpen, setPrinterDropOpen] = useState(false);
   const [printStatus, setPrintStatus] = useState("idle"); // idle | printing | done
+  const [printerScanning, setPrinterScanning] = useState(false);
 
   // ── Guest / WA state ──
   const [guestMode, setGuestMode] = useState("name"); // "name" | "wa" | "qr"
@@ -169,6 +171,7 @@ export default function Output({
 
   // ── Scan printers (manual refresh) ──
   const scanPrinters = () => {
+    setPrinterScanning(true);
     setPrinterDropOpen(true);
     setTimeout(() => {
       const mock = [
@@ -177,6 +180,7 @@ export default function Output({
         { id: "p3", name: "DNP DS620A", status: "offline" },
       ];
       setPrinters(mock);
+      setPrinterScanning(false);
       if (!selectedPrinter) setSelectedPrinter(mock[0]);
     }, 600);
   };
@@ -296,79 +300,25 @@ export default function Output({
       </style>
 
       {/* Header */}
-      <div
-        style={{
-          padding: "13px 22px",
-          background: "rgba(0,0,0,.03)",
-          borderBottom: "1px solid rgba(0,0,0,.1)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <button
-            className="ghost-btn"
-            onClick={onBack}
-            style={{ padding: "7px 14px", fontSize: "11px" }}
-          >
-            ← Kembali
-          </button>
-          <span
-            style={{
-              color: "var(--secondary)",
-              fontFamily: "var(--f)",
-              fontStyle: "italic",
-              fontSize: "18px",
-            }}
-          >
-            Snapbooth
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div
-            style={{
-              color: "rgba(0,0,0,.4)",
-              fontSize: "10px",
-              letterSpacing: "2px",
-            }}
-          >
-            SESSION
-          </div>
-          <div
-            style={{
-              color: "var(--secondary)",
-              fontSize: "12px",
-              letterSpacing: "3px",
-            }}
-          >
-            {sid.current}
-          </div>
-        </div>
-        <div
-          style={{
-            fontSize: "10px",
-            color: "rgba(0,0,0,.4)",
-            letterSpacing: "1px",
-          }}
-        >
-          {layout.label} · {layout.orientation}
-        </div>
-      </div>
+      <HeadBar
+        onBack={onBack}
+        settings={settings}
+        layout={layout}
+        photos={photos}
+      />
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         {/* ── LEFT: Preview ── */}
         <div
           style={{
-            width: "300px",
-            background: "rgba(0,0,0,.03)",
-            borderRight: "1px solid rgba(0,0,0,.1)",
+            width: "20rem",
+            background: "var(--white)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "28px 20px",
-            gap: "20px",
+            padding: "1rem 2rem",
+            gap: "2.5rem",
             flexShrink: 0,
           }}
         >
@@ -381,232 +331,350 @@ export default function Output({
           <div style={{ textAlign: "center" }}>
             <div
               style={{
-                color: "rgba(0,0,0,.4)",
-                fontSize: "10px",
-                letterSpacing: "2px",
-                marginBottom: "4px",
+                color: "var(--primary)",
+                fontFamily: "var(--f)",
+                fontWeight: "var(--fw-bold)",
+                fontSize: "var(--fs-h1)",
+                letterSpacing: ".1rem",
+                marginTop: ".5rem",
+                marginBottom: ".5rem",
               }}
             >
               HASIL AKHIR
             </div>
-            <div style={{ color: "rgba(0,0,0,.4)", fontSize: "11px" }}>
-              Foto + Template Frame
+            <div
+              style={{
+                color: "rgba(0,0,0,.5)",
+                fontFamily: "var(--f)",
+                fontWeight: "var(--fw-medium)",
+                fontSize: "var(--fs-h3)",
+                fontStyle: "italic",
+              }}
+            >
+              ( Foto + Bingkai )
             </div>
           </div>
 
-          {/* Status badge */}
-          {processDone && (
-            <div
-              style={{
-                width: "100%",
-                background: "rgba(76,175,80,.08)",
-                border: "1px solid rgba(76,175,80,.25)",
-                borderRadius: "10px",
-                padding: "12px 16px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <div
-                style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background: "rgba(76,175,80,.2)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "var(--green)",
-                  fontSize: "14px",
-                  flexShrink: 0,
-                }}
-              >
-                ✓
-              </div>
-              <div>
-                <div
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+              width: "100%",
+            }}
+          >
+            {/* Status badge */}
+            {processDone && (
+              <div className="done-yes">
+                <img
+                  src="/assets/circle-check.svg"
+                  alt="done"
+                  className="ic-green"
                   style={{
-                    color: "var(--green)",
-                    fontSize: "11px",
-                    fontWeight: 600,
+                    width: "30px",
+                    height: "30px",
+                    objectFit: "contain",
                   }}
-                >
-                  Proses Selesai
-                </div>
-                <div
-                  style={{
-                    color: "rgba(0,0,0,.4)",
-                    fontSize: "10px",
-                    marginTop: "2px",
-                  }}
-                >
-                  File tersimpan & terupload
+                />
+                <div>
+                  <div
+                    style={{
+                      color: "var(--green)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-semiBold)",
+                      fontSize: "var(--fs-h3)",
+                    }}
+                  >
+                    PROSES SELESAI
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(0,0,0,.5)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-regular)",
+                      fontSize: "var(--fs-h3)",
+                      marginTop: ".2rem",
+                    }}
+                  >
+                    file tersimpan & terunggah
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Status Badge Print */}
+            {printStatus === "done" && (
+              <div className="done-yes">
+                <img
+                  src="/assets/circle-check.svg"
+                  alt="done"
+                  className="ic-green"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    objectFit: "contain",
+                  }}
+                />
+                <div>
+                  <div
+                    style={{
+                      color: "var(--green)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-semiBold)",
+                      fontSize: "var(--fs-h3)",
+                    }}
+                  >
+                    SEDANG CETAK
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(0,0,0,.5)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-regular)",
+                      fontSize: "var(--fs-h3)",
+                      marginTop: ".2rem",
+                    }}
+                  >
+                    foto sedang dicetak
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Status Badge Kirim */}
+            {waStatus === "done" && (
+              <div className="done-yes">
+                <img
+                  src="/assets/circle-check.svg"
+                  alt="done"
+                  className="ic-green"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    objectFit: "contain",
+                  }}
+                />
+                <div>
+                  <div
+                    style={{
+                      color: "var(--green)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-semiBold)",
+                      fontSize: "var(--fs-h3)",
+                    }}
+                  >
+                    FOTO TERKIRIM
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(0,0,0,.5)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-regular)",
+                      fontSize: "var(--fs-h3)",
+                      marginTop: ".2rem",
+                    }}
+                  >
+                    file foto terkirim ke tamu
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── RIGHT: Actions ── */}
+        {/* Bagian Biar Bisa Scroll kalau mode window */}
         <div
           className="scroll"
           style={{
             flex: 1,
-            padding: "24px 28px",
+            padding: "2rem 2rem",
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            gap: "2rem",
           }}
         >
           {/* ── 1. PROSES ── */}
           <Section
-            title="① PROSES · RENDER + SAVE + UPLOAD"
+            title={
+              <span
+                style={{
+                  fontFamily: "var(--f)",
+                  letterSpacing: ".1rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: "var(--fw-black)",
+                    fontSize: "var(--fs-h2)",
+                    color: "var(--secondary)",
+                  }}
+                >
+                  PROSES
+                </span>
+
+                <span
+                  style={{
+                    fontWeight: "var(--fw-semiBold)",
+                    fontSize: "var(--fs-h3)",
+                    color: "rgba(0,0,0,.5)",
+                    marginLeft: ".5rem",
+                  }}
+                >
+                  (Render + Save + Upload)
+                </span>
+              </span>
+            }
             style={{
-              borderColor: processDone
-                ? "rgba(76,175,80,.35)"
-                : "rgba(0,0,0,.1)",
+              border: processDone
+                ? ".2rem solid var(--green)"
+                : processStatus === "running"
+                  ? ".2rem solid rgba(255,213,0,.5)"
+                  : ".2rem solid rgba(65,139,250,.5)",
+              backgroundColor: "var(--white)",
             }}
           >
             {/* Local path */}
-            <div style={{ marginBottom: "12px" }}>
+            <div style={{ marginBottom: "1rem" }}>
               <div
                 style={{
-                  color: "rgba(0,0,0,.4)",
-                  fontSize: "11px",
-                  marginBottom: "7px",
+                  color: "var(--secondary)",
+                  fontFamily: "var(--f)",
+                  fontWeight: "var(--fw-medium)",
+                  fontSize: "var(--fs-h3)",
+                  marginBottom: ".5rem",
                   display: "flex",
                   alignItems: "center",
-                  gap: "6px",
                 }}
               >
-                <span>💾</span> Path penyimpanan lokal
-                {pathLocked && (
-                  <span
-                    style={{
-                      marginLeft: "auto",
-                      color: "var(--secondary)",
-                      fontSize: "10px",
-                      background: "rgba(65,139,250,.1)",
-                      border: "1px solid rgba(65,139,250,.25)",
-                      borderRadius: "4px",
-                      padding: "2px 8px",
-                    }}
-                  >
-                    🔒 Terkunci
-                  </span>
-                )}
+                <span>Lokasi penyimpanan lokal</span>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
-                <input
-                  type="text"
-                  value={localPath}
-                  onChange={(e) => !pathLocked && setLocalPath(e.target.value)}
-                  readOnly={pathLocked}
-                  placeholder="Contoh: C:\Photobooth"
-                  style={{
-                    flex: 1,
-                    cursor: pathLocked ? "default" : "text",
-                    borderColor: pathLocked
-                      ? "rgba(65,139,250,.3)"
-                      : "rgba(0,0,0,.1)",
-                    background: pathLocked
-                      ? "rgba(65,139,250,.04)"
-                      : "rgba(255,255,255,.04)",
-                  }}
-                />
+                <div style={{ position: "relative", flex: 1 }}>
+                  <img
+                    src="/assets/folder-open.svg"
+                    alt="folder"
+                    className={pathLocked ? "ic-grey" : "ic-blue"}
+                    style={{
+                      position: "absolute",
+                      left: "1rem",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: "1.3rem",
+                      height: "1.3rem",
+                      pointerEvents: "none",
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={localPath}
+                    onChange={(e) =>
+                      !pathLocked && setLocalPath(e.target.value)
+                    }
+                    readOnly={pathLocked}
+                    placeholder="D:\Luxerna\"
+                    style={{
+                      paddingLeft: "2.8rem",
+                      flex: 1,
+                      cursor: pathLocked ? "default" : "text",
+                      border: pathLocked
+                        ? ".1rem solid rgba(0,0,0,.2)"
+                        : ".1rem solid var(--secondary)",
+                      background: pathLocked
+                        ? "rgba(0,0,0,.04)"
+                        : "rgba(65,139,250,.04)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-medium)",
+                      fontSize: "1rem",
+                      color: pathLocked ? "rgba(0,0,0,.4)" : "var(--primary)",
+                    }}
+                  />
+                </div>
+
+                {/* ── Tombol browse file ── */}
                 {!pathLocked && (
                   <button
-                    className="ghost-btn"
+                    className="back-btn"
                     style={{
-                      padding: "8px 14px",
-                      fontSize: "11px",
-                      whiteSpace: "nowrap",
+                      padding: ".5rem .5rem",
+                      cursor: "pointer",
                     }}
                   >
-                    📁 Browse
+                    <img
+                      src={"/assets/folder-search.svg"}
+                      alt="fs"
+                      className="ic-blue"
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                      }}
+                    />
+                    PILIH
                   </button>
                 )}
               </div>
-              {localPath && eventName && (
-                <div
-                  style={{
-                    marginTop: "6px",
-                    padding: "6px 10px",
-                    borderRadius: "6px",
-                    background: "rgba(255,255,255,.03)",
-                    border: "1px solid rgba(0,0,0,.1)",
-                    color: "rgba(0,0,0,.4)",
-                    fontSize: "11px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <span style={{ color: "var(--secondary)" }}>📁</span>
-                  <span style={{ color: "rgba(0,0,0,.6)" }}>
-                    {localPath.replace(/\+$/, "")}
-                  </span>
-                  <span style={{ color: "var(--secondary)" }}>
-                    \{eventName}\
-                  </span>
-                  <span style={{ color: "rgba(0,0,0,.4)" }}>
-                    foto_001.jpg, foto_002.jpg...
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Cloud folder */}
-            <div style={{ marginBottom: "18px" }}>
+            <div style={{ marginBottom: "1rem" }}>
               <div
                 style={{
-                  color: "rgba(0,0,0,.4)",
-                  fontSize: "11px",
-                  marginBottom: "7px",
+                  color: "var(--secondary)",
+                  fontFamily: "var(--f)",
+                  fontWeight: "var(--fw-medium)",
+                  fontSize: "var(--fs-h3)",
+                  marginBottom: ".5rem",
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
                 }}
               >
-                <span>☁</span> Folder cloud (Google Drive / Dropbox)
-                {pathLocked && (
-                  <span
-                    style={{
-                      marginLeft: "auto",
-                      color: "var(--secondary)",
-                      fontSize: "10px",
-                      background: "rgba(65,139,250,.1)",
-                      border: "1px solid rgba(65,139,250,.25)",
-                      borderRadius: "4px",
-                      padding: "2px 8px",
-                    }}
-                  >
-                    🔒 Terkunci
-                  </span>
-                )}
+                <span>Alamat penyimpanan awan (Google Drive)</span>
               </div>
-              <input
-                type="text"
-                value={cloudFolder}
-                onChange={(e) => !pathLocked && setCloudFolder(e.target.value)}
-                readOnly={pathLocked}
-                placeholder="nama-folder/sub-folder/"
-                style={{
-                  cursor: pathLocked ? "default" : "text",
-                  borderColor: pathLocked
-                    ? "rgba(65,139,250,.3)"
-                    : "rgba(0,0,0,.1)",
-                  background: pathLocked
-                    ? "rgba(65,139,250,.04)"
-                    : "rgba(255,255,255,.04)",
-                }}
-              />
+              <div style={{ position: "relative" }}>
+                <img
+                  src="/assets/cloud-up.svg"
+                  alt="cloud"
+                  className={pathLocked ? "ic-grey" : "ic-blue"}
+                  style={{
+                    position: "absolute",
+                    left: "1rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "1.3rem",
+                    height: "1.3rem",
+                    pointerEvents: "none",
+                  }}
+                />
+                <input
+                  type="text"
+                  value={cloudFolder}
+                  onChange={(e) =>
+                    !pathLocked && setCloudFolder(e.target.value)
+                  }
+                  readOnly={pathLocked}
+                  placeholder="https://google.drive.com/"
+                  style={{
+                    paddingLeft: "2.8rem",
+                    cursor: pathLocked ? "default" : "text",
+                    border: pathLocked
+                      ? ".1rem solid rgba(0,0,0,.2)"
+                      : ".1rem solid var(--secondary)",
+                    background: pathLocked
+                      ? "rgba(0,0,0,.04)"
+                      : "rgba(65,139,250,.04)",
+                    fontFamily: "var(--f)",
+                    fontWeight: "var(--fw-medium)",
+                    fontSize: "1rem",
+                    color: pathLocked ? "rgba(0,0,0,.4)" : "var(--primary)",
+                  }}
+                />
+              </div>
             </div>
 
             {/* Progress */}
             {processStatus !== "idle" && (
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "1rem" }}>
                 <div
                   style={{
                     display: "flex",
@@ -614,30 +682,43 @@ export default function Output({
                     marginBottom: "8px",
                   }}
                 >
-                  <span style={{ color: "rgba(0,0,0,.4)", fontSize: "11px" }}>
-                    Progress
+                  <span
+                    style={{
+                      color: "rgba(0,0,0,.5)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-medium)",
+                      fontSize: "var(--fs-h3)",
+                    }}
+                  >
+                    KEMAJUAN
                   </span>
-                  <span style={{ color: "var(--secondary)", fontSize: "11px" }}>
+                  <span
+                    style={{
+                      color: "rgba(0,0,0,.5)",
+                      fontFamily: "var(--f)",
+                      fontWeight: "var(--fw-medium)",
+                      fontSize: "var(--fs-h3)",
+                    }}
+                  >
                     {processProgress}%
                   </span>
                 </div>
                 <div
                   style={{
-                    background: "rgba(255,255,255,.05)",
-                    borderRadius: "4px",
-                    height: "5px",
+                    background: "rgba(0,0,0,.1)",
+                    borderRadius: ".5rem",
+                    height: ".5rem",
                     overflow: "hidden",
-                    marginBottom: "14px",
+                    marginBottom: "1rem",
                   }}
                 >
                   <div
                     style={{
                       height: "100%",
-                      background:
-                        "linear-gradient(90deg,var(--gold-d),var(--secondary),var(--gold-l))",
+                      background: "var(--green)",
                       width: `${processProgress}%`,
                       transition: "width .5s ease",
-                      borderRadius: "4px",
+                      borderRadius: ".5rem",
                     }}
                   />
                 </div>
@@ -645,7 +726,7 @@ export default function Output({
                   style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "8px",
+                    gap: ".5rem",
                   }}
                 >
                   {processSteps.map((s, i) => (
@@ -659,28 +740,43 @@ export default function Output({
                     >
                       <div
                         style={{
-                          width: "18px",
-                          height: "18px",
+                          width: "1.25rem",
+                          height: "1.25rem",
                           borderRadius: "50%",
                           flexShrink: 0,
-                          background: s.done
-                            ? "rgba(76,175,80,.2)"
-                            : "rgba(255,255,255,.04)",
-                          border: `1px solid ${s.done ? "var(--green)" : "rgba(0,0,0,.1)"}`,
+                          background: "transparent",
+                          border: `.15rem solid ${s.done ? "transparent" : "rgba(0,0,0,.3)"}`,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          fontFamily: "var(--f)",
+                          fontWeight: "var(--fw-semiBold)",
                           fontSize: "10px",
-                          color: s.done ? "var(--green)" : "rgba(0,0,0,.4)",
+                          color: s.done ? "transparent" : "rgba(0,0,0,.3)",
                           transition: "all .35s",
                         }}
                       >
-                        {s.done ? "✓" : i + 1}
+                        {s.done ? (
+                          <img
+                            src="/assets/circle-check.svg"
+                            alt="prodo"
+                            className="ic-green"
+                            style={{
+                              width: "1.3re",
+                              height: "1.3rem",
+                              objectFit: "contain",
+                            }}
+                          />
+                        ) : (
+                          <span>{i + 1}</span>
+                        )}
                       </div>
                       <span
                         style={{
-                          color: s.done ? "var(--primary)" : "rgba(0,0,0,.4)",
-                          fontSize: "12px",
+                          color: s.done ? "var(--primary)" : "rgba(0,0,0,.3)",
+                          fontFamily: "var(--f)",
+                          fontWeight: "var(--fw-regular)",
+                          fontSize: ".8rem",
                           transition: "color .3s",
                         }}
                       >
@@ -690,8 +786,10 @@ export default function Output({
                         <span
                           style={{
                             color: "var(--secondary)",
-                            fontSize: "10px",
-                            opacity: 0.6,
+                            fontFamily: "var(--f)",
+                            fontWeight: "var(--fw-regular)",
+                            fontSize: ".8rem",
+                            opacity: 0.7,
                           }}
                         >
                           {localPath}\{eventName}\foto_
@@ -702,7 +800,9 @@ export default function Output({
                         <span
                           style={{
                             color: "var(--secondary)",
-                            fontSize: "10px",
+                            fontFamily: "var(--f)",
+                            fontWeight: "var(--fw-regular)",
+                            fontSize: ".8rem",
                             opacity: 0.6,
                           }}
                         >
@@ -724,67 +824,63 @@ export default function Output({
               }}
             >
               {/* Lock path toggle */}
-              {processStatus === "idle" && localPath && (
-                <button
-                  onClick={() => setPathLocked(!pathLocked)}
+
+              <button
+                onClick={() => setPathLocked(!pathLocked)}
+                className="admin-btn"
+                style={{
+                  background: pathLocked ? "var(--secondary)" : "transparent",
+                  border: "2px solid var(--secondary)",
+                  borderRadius: ".5rem",
+                  padding: ".5rem 1rem",
+                  cursor: "pointer",
+                  color: pathLocked ? "var(--white)" : "var(--secondary)",
+                  fontFamily: "var(--f)",
+                  fontSize: "var(--fs-h3)",
+                  fontWeight: "var(--fw-semiBold)",
+                  letterSpacing: ".1rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".7rem",
+                  transition: "all .2s",
+                }}
+              >
+                <img
+                  src={
+                    pathLocked ? "/assets/lock-open-2.svg" : "/assets/lock.svg"
+                  }
+                  alt="lock"
+                  className={pathLocked ? "ic-white" : "ic-blue"}
                   style={{
-                    background: "transparent",
-                    border: `1px solid ${pathLocked ? "rgba(65,139,250,.4)" : "rgba(0,0,0,.1)"}`,
-                    borderRadius: "7px",
-                    padding: "7px 14px",
-                    cursor: "pointer",
-                    color: pathLocked ? "var(--secondary)" : "rgba(0,0,0,.4)",
-                    fontFamily: "var(--f)",
-                    fontSize: "11px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    transition: "all .2s",
+                    width: "16px",
+                    height: "16px",
                   }}
-                >
-                  {pathLocked ? "🔒 Path terkunci" : "🔓 Kunci path"}
-                </button>
-              )}
+                />
+                {pathLocked ? "BUKA" : "TERAPKAN"}
+              </button>
+
+              {/* tombol proses */}
               <div style={{ marginLeft: "auto" }}>
                 {processStatus === "idle" && (
                   <button
-                    className="primary-btn"
+                    className="procs-btn"
                     onClick={runProcess}
                     style={{
-                      borderRadius: "8px",
-                      padding: "13px 36px",
-                      fontSize: "13px",
+                      borderRadius: ".5rem",
+                      padding: ".7rem 1rem",
                     }}
                   >
-                    ⚙ Proses
+                    <img
+                      src="/assets/settings.svg"
+                      alt="procs"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        objectFit: "contain",
+                      }}
+                    />
+                    <span>PROSES</span>
                   </button>
-                )}
-                {processStatus === "running" && (
-                  <div
-                    style={{
-                      color: "rgba(0,0,0,.4)",
-                      fontSize: "12px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <span style={{ animation: "shimmer 1s infinite" }}>⟳</span>{" "}
-                    Memproses...
-                  </div>
-                )}
-                {processStatus === "done" && (
-                  <div
-                    style={{
-                      color: "var(--green)",
-                      fontSize: "13px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    ✓ Proses selesai
-                  </div>
                 )}
               </div>
             </div>
@@ -792,50 +888,90 @@ export default function Output({
 
           {/* ── 2. PRINT ── */}
           <Section
-            title="② CETAK FOTO (tanpa frame)"
-            style={{
-              borderColor:
-                printStatus === "done"
-                  ? "rgba(76,175,80,.35)"
-                  : !processDone
-                    ? "rgba(0,0,0,.1)"
-                    : "rgba(0,0,0,.1)",
-              opacity: processDone ? 1 : 0.55,
-            }}
-          >
-            <div style={{ marginBottom: "14px" }}>
-              <div
+            title={
+              <span
                 style={{
-                  color: "rgba(0,0,0,.4)",
-                  fontSize: "11px",
-                  marginBottom: "8px",
+                  fontFamily: "var(--f)",
+                  letterSpacing: ".1rem",
                 }}
               >
-                Pilih printer aktif
+                <span
+                  style={{
+                    fontWeight: "var(--fw-black)",
+                    fontSize: "var(--fs-h2)",
+                    color: "var(--secondary)",
+                  }}
+                >
+                  CETAK FOTO
+                </span>
+
+                <span
+                  style={{
+                    fontWeight: "var(--fw-semiBold)",
+                    fontSize: "var(--fs-h3)",
+                    color: "rgba(0,0,0,.5)",
+                    marginLeft: ".5rem",
+                  }}
+                >
+                  (tanpa frame)
+                </span>
+              </span>
+            }
+            style={{
+              border:
+                printStatus === "done"
+                  ? ".2rem solid var(--green)"
+                  : ".2rem solid rgba(65,139,250,.5)",
+              backgroundColor: "var(--white)",
+            }}
+          >
+            <div style={{ marginBottom: "1rem" }}>
+              <div
+                style={{
+                  color: "var(--secondary)",
+                  fontFamily: "var(--f)",
+                  fontWeight: "var(--fw-medium)",
+                  fontSize: "var(--fs-h3)",
+                  marginBottom: ".5rem",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <span>PERANGKAT PENCETAK</span>
               </div>
+
+              {/* bagian bar printer */}
               <div style={{ position: "relative" }}>
                 <button
-                  onClick={
-                    processDone && !printerLocked ? scanPrinters : undefined
-                  }
+                  onClick={() => {
+                    if (printerLocked) return;
+                    if (printerDropOpen) {
+                      setPrinterDropOpen(false);
+                    } else {
+                      setPrinterDropOpen(true);
+                      scanPrinters();
+                    }
+                  }}
                   style={{
                     width: "100%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    padding: "11px 14px",
-                    borderRadius: "9px",
+                    padding: ".7rem 1rem",
+                    borderRadius: ".5rem",
                     background: printerLocked
-                      ? "rgba(65,139,250,.04)"
-                      : "rgba(255,255,255,.04)",
-                    border: `1px solid ${printerLocked ? "rgba(65,139,250,.3)" : printerDropOpen ? "var(--secondary)" : "rgba(0,0,0,.1)"}`,
+                      ? "rgba(0,0,0,.04)"
+                      : "rgba(65,139,250,.04)",
+                    border: printerLocked
+                      ? ".1rem solid rgba(0,0,0,.2)"
+                      : ".1rem solid var(--secondary)",
                     color: selectedPrinter
                       ? "var(--primary)"
                       : "rgba(0,0,0,.4)",
                     fontFamily: "var(--f)",
-                    fontSize: "12px",
-                    cursor:
-                      processDone && !printerLocked ? "pointer" : "not-allowed",
+                    fontWeight: "var(--fw-medium)",
+                    fontSize: "1rem",
+                    cursor: !printerLocked ? "pointer" : "default",
                     transition: "all .2s",
                     textAlign: "left",
                   }}
@@ -847,86 +983,84 @@ export default function Output({
                       gap: "10px",
                     }}
                   >
-                    <span>🖨</span>
-                    <span>
+                    <img
+                      src="/assets/printer.svg"
+                      alt="prt"
+                      className={
+                        printerLocked
+                          ? "ic-grey"
+                          : selectedPrinter
+                            ? "ic-blue"
+                            : "ic-grey"
+                      }
+                      style={{ width: "1.3rem", height: "1.3rem" }}
+                    />
+
+                    <span
+                      style={{
+                        color: printerLocked
+                          ? "rgba(0,0,0,.4)"
+                          : selectedPrinter
+                            ? "var(--primary)"
+                            : "rgba(0,0,0,.4)",
+                      }}
+                    >
                       {selectedPrinter
                         ? selectedPrinter.name
-                        : "Klik untuk deteksi printer..."}
+                        : "PILIH PENCETAK!"}
                     </span>
-                    {selectedPrinter && (
-                      <span
-                        style={{
-                          fontSize: "9px",
-                          padding: "2px 7px",
-                          borderRadius: "4px",
-                          background:
-                            selectedPrinter.status === "ready"
-                              ? "rgba(76,175,80,.15)"
-                              : "rgba(239,83,80,.15)",
-                          color:
-                            selectedPrinter.status === "ready"
-                              ? "var(--green)"
-                              : "var(--red)",
-                          border: `1px solid ${selectedPrinter.status === "ready" ? "rgba(76,175,80,.3)" : "rgba(239,83,80,.3)"}`,
-                        }}
-                      >
-                        {selectedPrinter.status}
-                      </span>
-                    )}
                   </div>
-                  {printerLocked ? (
-                    <span
-                      style={{
-                        color: "var(--secondary)",
-                        fontSize: "10px",
-                        background: "rgba(65,139,250,.1)",
-                        border: "1px solid rgba(65,139,250,.25)",
-                        borderRadius: "4px",
-                        padding: "2px 8px",
-                      }}
-                    >
-                      🔒 Terkunci
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        color: "var(--secondary)",
-                        fontSize: "11px",
-                        transform: printerDropOpen
-                          ? "rotate(180deg)"
-                          : "rotate(0deg)",
-                        transition: "transform .2s",
-                      }}
-                    >
-                      ▾
-                    </span>
-                  )}
+                  <img
+                    src="/assets/caret-down.svg"
+                    alt="cdw"
+                    className={printerLocked ? "ic-grey" : "ic-blue"}
+                    style={{
+                      width: "1rem",
+                      height: "1rem",
+                      transform: printerDropOpen
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                      transition: "transform .2s",
+                    }}
+                  />
                 </button>
                 {printerDropOpen && (
                   <div
                     style={{
                       position: "absolute",
-                      top: "calc(100% - 2px)",
                       left: 0,
                       right: 0,
                       zIndex: 50,
-                      background: "var(--bg)",
-                      border: "1px solid var(--secondary)",
-                      borderRadius: "0 0 10px 10px",
+                      background: "var(--white)",
+                      borderRadius: "1rem",
                       overflow: "hidden",
-                      boxShadow: "0 12px 40px rgba(0,0,0,.7)",
                       animation: "fadeUp .18s ease",
                     }}
                   >
-                    {printers.length === 0 ? (
+                    {printerScanning ? (
                       <div
                         style={{
-                          padding: "14px 16px",
-                          color: "rgba(0,0,0,.4)",
-                          fontSize: "12px",
+                          padding: "1rem 1rem",
+                          color: "var(--secondary)",
+                          fontFamily: "var(--f)",
+                          fontWeight: "var(--fw-regular)",
+                          fontSize: "var(--fs-h2)",
+                          display: "flex",
+                          alignItems: "center",
                         }}
                       >
-                        Mendeteksi printer...
+                        <img
+                          src="/assets/rotate-clockwise-2.svg"
+                          alt="rcw"
+                          className="ic-blue"
+                          style={{
+                            marginRight: ".7rem",
+                            width: "1.3rem",
+                            height: "1.3rem",
+                            animation: "infSpin 0.8s linear infinite",
+                          }}
+                        />
+                        Mencari...
                       </div>
                     ) : (
                       printers.map((p, i) => {
@@ -939,24 +1073,20 @@ export default function Output({
                               setPrinterDropOpen(false);
                             }}
                             style={{
-                              padding: "11px 16px",
+                              padding: ".7rem 1rem",
                               cursor: "pointer",
                               display: "flex",
                               alignItems: "center",
-                              gap: "12px",
+                              gap: ".7rem",
                               background: isActive
                                 ? "rgba(65,139,250,.1)"
                                 : "transparent",
-                              borderBottom:
-                                i < printers.length - 1
-                                  ? "1px solid rgba(0,0,0,.1)"
-                                  : "none",
                               transition: "background .15s",
                             }}
                             onMouseEnter={(e) => {
                               if (!isActive)
                                 e.currentTarget.style.background =
-                                  "rgba(255,255,255,.04)";
+                                  "rgba(0,0,0,.04)";
                             }}
                             onMouseLeave={(e) => {
                               if (!isActive)
@@ -964,14 +1094,34 @@ export default function Output({
                                   "transparent";
                             }}
                           >
-                            <span style={{ fontSize: "18px" }}>🖨</span>
-                            <div style={{ flex: 1 }}>
+                            <div
+                              style={{
+                                flex: 1,
+                                minWidth: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: ".7rem",
+                              }}
+                            >
+                              {isActive && (
+                                <img
+                                  src="/assets/circle-check.svg"
+                                  alt="ccc"
+                                  className="ic-blue"
+                                  style={{ width: "1.3rem", height: "1.3rem" }}
+                                />
+                              )}
                               <div
                                 style={{
                                   color: isActive
                                     ? "var(--secondary)"
                                     : "var(--primary)",
-                                  fontSize: "12px",
+                                  fontFamily: "var(--f)",
+                                  fontWeight: "var(--fw-semiBold)",
+                                  fontSize: "1rem",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
                                 }}
                               >
                                 {p.name}
@@ -994,46 +1144,40 @@ export default function Output({
                             >
                               {p.status}
                             </span>
-                            {isActive && (
-                              <span
-                                style={{
-                                  color: "var(--secondary)",
-                                  fontSize: "12px",
-                                }}
-                              >
-                                ✓
-                              </span>
-                            )}
                           </div>
                         );
                       })
                     )}
+
                     <div
-                      onClick={scanPrinters}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        scanPrinters();
+                      }}
+                      className="cam-scan"
                       style={{
-                        padding: "10px 16px",
+                        padding: "1rem 3rem",
                         cursor: "pointer",
-                        borderTop: "1px solid rgba(0,0,0,.1)",
-                        color: "rgba(0,0,0,.4)",
-                        fontSize: "11px",
+                        fontFamily: "var(--f)",
+                        fontWeight: "var(--fw-medium)",
+                        fontSize: "var(--fs-h3)",
                         display: "flex",
                         alignItems: "center",
-                        gap: "8px",
+                        gap: ".5rem",
                       }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.color = "var(--secondary)")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.color = "rgba(0,0,0,.4)")
-                      }
                     >
-                      <span>⟳</span> Scan ulang
+                      <img
+                        src="/assets/rotate-clockwise-2.svg"
+                        alt="rcw"
+                        style={{ width: "1rem", height: "1rem" }}
+                      />
+                      PINDAI ULANG
                     </div>
                   </div>
                 )}
                 {printerDropOpen && (
                   <div
-                    onClick={() => setPrinterDropOpen(false)}
+                    onMouseDown={() => setPrinterDropOpen(false)}
                     style={{ position: "fixed", inset: 0, zIndex: 49 }}
                   />
                 )}
@@ -1066,72 +1210,81 @@ export default function Output({
                           ? "Pilih printer terlebih dahulu"
                           : "Siap cetak"}
                 </div>
-                {selectedPrinter && processDone && printStatus === "idle" && (
+                {selectedPrinter && printStatus === "idle" && (
                   <button
                     onClick={() => setSelectedPrinterLocked(!printerLocked)}
+                    className="admin-btn"
                     style={{
-                      background: "transparent",
-                      border: `1px solid ${printerLocked ? "rgba(65,139,250,.4)" : "rgba(0,0,0,.1)"}`,
-                      borderRadius: "7px",
-                      padding: "5px 12px",
+                      background: printerLocked
+                        ? "var(--secondary)"
+                        : "transparent",
+                      border: "2px solid var(--secondary)",
+                      borderRadius: ".5rem",
+                      padding: ".5rem 1rem",
                       cursor: "pointer",
                       color: printerLocked
-                        ? "var(--secondary)"
-                        : "rgba(0,0,0,.4)",
+                        ? "var(--white)"
+                        : "var(--secondary)",
                       fontFamily: "var(--f)",
-                      fontSize: "10px",
+                      fontSize: "var(--fs-h3)",
+                      fontWeight: "var(--fw-semiBold)",
+                      letterSpacing: ".1rem",
                       display: "flex",
                       alignItems: "center",
-                      gap: "5px",
+                      gap: ".7rem",
                       transition: "all .2s",
-                      whiteSpace: "nowrap",
                     }}
                   >
-                    {printerLocked ? "🔒 Terkunci" : "🔓 Kunci printer"}
+                    <img
+                      src={
+                        printerLocked
+                          ? "/assets/lock-open-2.svg"
+                          : "/assets/lock.svg"
+                      }
+                      alt="lock"
+                      className={printerLocked ? "ic-white" : "ic-blue"}
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                    {printerLocked ? "BUKA" : "TERAPKAN"}
                   </button>
                 )}
               </div>
+
+              {/* Tombol print */}
               <button
                 onClick={runPrint}
                 disabled={
                   !processDone || !selectedPrinter || printStatus !== "idle"
                 }
+                className="procs-btn"
                 style={{
-                  borderRadius: "8px",
-                  padding: "12px 28px",
-                  fontSize: "12px",
-                  letterSpacing: "2px",
-                  border: "none",
+                  marginLeft: "auto",
+                  opacity:
+                    !processDone || !selectedPrinter || printStatus !== "idle"
+                      ? 0.5
+                      : 1,
                   cursor:
-                    processDone && selectedPrinter && printStatus === "idle"
-                      ? "pointer"
-                      : "not-allowed",
-                  fontFamily: "var(--f)",
-                  fontWeight: 600,
-                  transition: "all .3s",
-                  background:
-                    printStatus === "done"
-                      ? "rgba(76,175,80,.2)"
-                      : processDone && selectedPrinter && printStatus === "idle"
-                        ? "linear-gradient(135deg,var(--gold-d),var(--secondary),var(--gold-l))"
-                        : "rgba(255,255,255,.06)",
-                  color:
-                    printStatus === "done"
-                      ? "var(--green)"
-                      : processDone && selectedPrinter && printStatus === "idle"
-                        ? "#0c0900"
-                        : "rgba(0,0,0,.4)",
-                  boxShadow:
-                    processDone && selectedPrinter && printStatus === "idle"
-                      ? "0 4px 20px rgba(65,139,250,.3)"
-                      : "none",
+                    !processDone || !selectedPrinter || printStatus !== "idle"
+                      ? "not-allowed"
+                      : "pointer",
                 }}
               >
-                {printStatus === "done"
-                  ? "✓ Tercetak"
-                  : printStatus === "printing"
-                    ? "Mencetak..."
-                    : "🖨 Print"}
+                <img
+                  src="/assets/file-arrow-right.svg"
+                  alt="flpr"
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    objectFit: "contain",
+                  }}
+                />
+                <span>
+                  {printStatus === "printing"
+                    ? "MENCETAK..."
+                    : printStatus === "done"
+                      ? "TERCETAK"
+                      : "PRINT"}
+                </span>
               </button>
             </div>
           </Section>
@@ -1252,7 +1405,6 @@ export default function Output({
                       borderRadius: "0 0 10px 10px",
                       overflow: "hidden",
                       boxShadow: "0 12px 40px rgba(0,0,0,.7)",
-                      animation: "fadeUp .18s ease",
                     }}
                   >
                     {guestResults.map((g, i) => (

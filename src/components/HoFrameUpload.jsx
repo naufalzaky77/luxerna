@@ -31,7 +31,7 @@ export default function FrameUpload({
     <div>
       <div
         style={{
-          color: "var(--black)",
+          color: "var(--primary)",
           fontFamily: "var(--f)",
           fontSize: "var(--fs-h3)",
           fontWeight: "var(--fw-medium)",
@@ -41,6 +41,8 @@ export default function FrameUpload({
       >
         DESAIN FRAME
       </div>
+
+      {/* Bagian Zona Upload */}
       <input
         ref={fileRef}
         type="file"
