@@ -93,8 +93,8 @@ export const MOCK = [
 
 export const GUEST_DB = [      
   { id: "G001", name: "Budi Santoso",    wa: "628111111111" },
-  { id: "G002", name: "Siti Rahayu",     wa: "628122222222" },
-  { id: "G003", name: "Andi Pratama",    wa: "628133333333" },
+  { id: "G002", name: "Buti Rahayu",     wa: "628122222222" },
+  { id: "G003", name: "Budi Pratama",    wa: "628133333333" },
   { id: "G004", name: "Dewi Kusuma",     wa: "628144444444" },
   { id: "G005", name: "Reza Firmansyah", wa: "628155555555" },
 ];

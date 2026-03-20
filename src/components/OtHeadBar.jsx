@@ -2,14 +2,7 @@
 
 import TimeDate from "./HoTimeDate";
 
-export default function HeadBar({
-  onBack,
-  settings,
-  layout,
-  photos,
-  active,
-  total,
-}) {
+export default function HeadBar({ onBack, settings, layout }) {
   return (
     <div
       style={{

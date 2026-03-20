@@ -20,7 +20,7 @@ export default function App() {
 
   // Persistent path settings (locked once set)
   const [localPath, setLocalPath]     = useState("");
-  const [cloudFolder, setCloudFolder] = useState("photobooth/events/");
+  const [cloudFolder, setCloudFolder] = useState("");
   const [pathLocked, setPathLocked]   = useState(false);
 
   // Persistent printer settings (locked once set)
@@ -46,7 +46,7 @@ export default function App() {
   
 
   return (
-    <div style={{ width:"100%", height:"100vh", overflow:"hidden", background:"var(--bg)", position:"relative" }}>
+    <div style={{ width:"100%", height:"100vh", overflow:"hidden auto", background:"var(--bg)", position:"relative" }}>
       <style>{buildCssVars()}{G}</style>
 
       
