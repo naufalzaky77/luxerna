@@ -10,6 +10,23 @@ export default function FrameUpload({
   onSettingsChange,
 }) {
   const fileRef = useRef();
+  const rmvImgRef = useRef(null);
+
+  const handleRmvEnter = () => {
+    const img = rmvImgRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "spinLogo .6s ease forwards";
+  };
+
+  const handleRmvLeave = () => {
+    const img = rmvImgRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "spinLogoReverse .6s ease forwards";
+  };
 
   const handleTemplateUpload = (e) => {
     const file = e.target.files[0];
@@ -139,11 +156,14 @@ export default function FrameUpload({
             <button
               onClick={removeTemplate}
               className="ghost-btn"
+              onMouseEnter={handleRmvEnter}
+              onMouseLeave={handleRmvLeave}
               style={{
                 flexShrink: 0,
               }}
             >
               <img
+                ref={rmvImgRef}
                 src="/assets/x.svg"
                 alt="rmv"
                 className="rmv-img"

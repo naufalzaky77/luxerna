@@ -20,7 +20,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
       onSettingsChange({
         ...settings,
         cameras: vids,
-        selectedCamera: vids.length > 0 ? vids[0] : null,
+        selectedCamera: settings.selectedCamera ?? null,
       });
     } catch {
       onSettingsChange({ ...settings, cameras: [], selectedCamera: null });
@@ -71,7 +71,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
             className={selectedCamera ? "ic-blue" : "ic-grey"}
             style={{ width: "1.5rem", height: "1.5rem" }}
           />
-          <span style={{ fontFamily: "var(--f)", fontSize: "12px" }}>
+          <span style={{ fontFamily: "var(--f)", fontSize: "1rem" }}>
             {cameraScanning
               ? "Mencari kamera..."
               : selectedCamera

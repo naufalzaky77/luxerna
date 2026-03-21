@@ -7,7 +7,7 @@ export default function HeadBar({ onBack, settings, layout }) {
     <div
       style={{
         padding: ".7rem 1.5rem",
-        background: "rgba(0,0,0,.05)",
+        background: "#dedede",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",

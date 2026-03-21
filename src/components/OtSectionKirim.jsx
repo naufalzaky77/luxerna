@@ -1,5 +1,7 @@
 // BAGIAN OUTPUT SECTION KIRIM KANAN
 
+import { useRef } from "react";
+
 export default function SectKirim({
   processDone,
   waStatus,
@@ -23,6 +25,57 @@ export default function SectKirim({
   simulateQrScan,
   qrScanning,
 }) {
+  const sendImgRef = useRef(null);
+  const delImg1Ref = useRef(null);
+  const delImg2Ref = useRef(null);
+  const delImg3Ref = useRef(null);
+  const qrwcImgRef = useRef(null);
+
+  const makeAnimHandlers = (ref, enterAnim, leaveAnim) => ({
+    onMouseEnter: () => {
+      const img = ref.current;
+      if (!img) return;
+      img.style.animation = "none";
+      void img.offsetWidth;
+      img.style.animation = enterAnim;
+    },
+    onMouseLeave: () => {
+      const img = ref.current;
+      if (!img) return;
+      img.style.animation = "none";
+      void img.offsetWidth;
+      img.style.animation = leaveAnim;
+    },
+  });
+
+  const sendHandlers = makeAnimHandlers(
+    sendImgRef,
+    "slideLeftFar .6s ease forwards",
+    "slideRightFar .6s ease forwards",
+  );
+
+  const del1Handlers = makeAnimHandlers(
+    delImg1Ref,
+    "spinLogo .3s ease forwards",
+    "spinLogoReverse .3s ease forwards",
+  );
+  const del2Handlers = makeAnimHandlers(
+    delImg2Ref,
+    "spinLogo .3s ease forwards",
+    "spinLogoReverse .3s ease forwards",
+  );
+  const del3Handlers = makeAnimHandlers(
+    delImg3Ref,
+    "spinLogo .3s ease forwards",
+    "spinLogoReverse .3s ease forwards",
+  );
+
+  const qrwcHandlers = makeAnimHandlers(
+    qrwcImgRef,
+    "zoomIn .3s ease forwards",
+    "zoomOut .3s ease forwards",
+  );
+
   const Section = ({ title, children, style = {} }) => (
     <div className="card" style={{ padding: "20px 22px", ...style }}>
       <div
@@ -171,6 +224,7 @@ export default function SectKirim({
                     setWaStatus("idle");
                   }}
                   className="del-btn"
+                  {...del1Handlers}
                   style={{
                     flexShrink: 0,
                     position: "absolute",
@@ -180,6 +234,7 @@ export default function SectKirim({
                   }}
                 >
                   <img
+                    ref={delImg1Ref}
                     src="/assets/x.svg"
                     alt="rmv"
                     className="rmv-img"
@@ -317,6 +372,7 @@ export default function SectKirim({
                     setWaStatus("idle");
                   }}
                   className="del-btn"
+                  {...del2Handlers}
                   style={{
                     flexShrink: 0,
                     position: "absolute",
@@ -326,6 +382,7 @@ export default function SectKirim({
                   }}
                 >
                   <img
+                    ref={delImg2Ref}
                     src="/assets/x.svg"
                     alt="rmv"
                     className="rmv-img"
@@ -449,6 +506,7 @@ export default function SectKirim({
                 setWaStatus("idle");
               }}
               className="del-btn"
+              {...del3Handlers}
               style={{
                 flexShrink: 0,
                 position: "absolute",
@@ -458,6 +516,7 @@ export default function SectKirim({
               }}
             >
               <img
+                ref={delImg3Ref}
                 src="/assets/x.svg"
                 alt="rmv"
                 className="rmv-img"
@@ -475,12 +534,14 @@ export default function SectKirim({
           <button
             className="send-btn"
             onClick={sendWa}
+            {...sendHandlers}
             style={{
               pointerEvents: !canSendWa() ? "none" : "auto",
               opacity: !canSendWa() ? 0.4 : 1,
             }}
           >
             <img
+              ref={sendImgRef}
               src="/assets/send-2.svg"
               alt="wa"
               style={{
@@ -608,12 +669,14 @@ export default function SectKirim({
                 <button
                   className={"qrwc-btn"}
                   onClick={simulateQrScan}
+                  {...qrwcHandlers}
                   style={{
                     borderRadius: "3rem",
                     padding: "1rem 2rem",
                   }}
                 >
                   <img
+                    ref={qrwcImgRef}
                     src="/assets/scan.svg"
                     alt="scqr"
                     style={{

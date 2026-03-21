@@ -1,8 +1,6 @@
 export const G = /*css*/`
 
 
-
-
 /* ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
 /* ─── FONT ─────────────────────── FONT ────────────────────────────────────── FONT ────────────────────────────────── FONT ──────────────────────────────────────── FONT ────────────── */
 
@@ -11,41 +9,57 @@ export const G = /*css*/`
     src: url('/fonts/Roboto-Thin.ttf') format('truetype');
     font-weight: 100;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-ExtraLight.ttf') format('truetype');
     font-weight: 200;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-Light.ttf') format('truetype');
     font-weight: 300;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-Regular.ttf') format('truetype');
     font-weight: 400;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-Medium.ttf') format('truetype');
     font-weight: 500;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-SemiBold.ttf') format('truetype');
     font-weight: 600;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-Bold.ttf') format('truetype');
     font-weight: 700;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-ExtraBold.ttf') format('truetype');
     font-weight: 800;
   }
+
+
   @font-face {
     font-family: 'Roboto';
     src: url('/fonts/Roboto-Black.ttf') format('truetype');
@@ -76,34 +90,50 @@ export const G = /*css*/`
     from{transform: rotate(0deg);}
     to{transform: rotate(180deg);}
   }
+
+
   @keyframes spinLogoReverse {
     from{transform: rotate(180deg);}
     to{transform: rotate(0deg);}
   }
+
+
   @keyframes infSpin {
     from{transform: rotate(0deg);} 
     to{transform: rotate(360deg);}
   }
+
+
   @keyframes pulseRing {
     0% { box-shadow: 0 0 0 0 rgba(65,139,250,.4); }
     100% { box-shadow: 0 0 0 40px rgba(65,139,250,0); }
   }
+
+
   @keyframes zoomIn {
     0% { transform: scale(1) }
     100% { transform: scale(1.5) }
   }
+
+
   @keyframes zoomOut {
     0% { transform: scale(1.5) }
     100% { transform: scale(1) }
   }
+
+
   @keyframes slideLeft {
     from{transform: translateX(-100%);}
     to{transform: translateX(0);}
   }
+
+
   @keyframes slideLeftFar {
     from{transform: translateX(0);}
     to{transform: translateX(200%);}
   }
+
+
   @keyframes slideRightFar {
     from{transform: translateX(100%);}
     to{transform: translateX(0);}
@@ -128,31 +158,36 @@ export const G = /*css*/`
 
 
 /* ─── Filter Warna ─────────────────────────────────────────────── */
+  
   .ic-blue {
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);
   }
+
 
   .ic-grey {
     filter: brightness(0) opacity(0.4);
   }
 
+
   .ic-white {
     filter: brightness(0) invert(1);
   }
+
 
   .ic-green {
     filter: brightness(0) saturate(100%) invert(52%) sepia(97%) saturate(500%) hue-rotate(87deg) brightness(95%) contrast(101%);
   }
 
+
   .ic-yellow {
     filter: brightness(0) saturate(100%) invert(83%) sepia(61%) saturate(500%) hue-rotate(5deg) brightness(103%) contrast(97%);
   }
 
-  
 /* ──────────────────────────────────────────────────────────────── */
 
 
 /* ─── Tombol ───────────────────────────────────────────────────── */
+  
   .start-btn1 {
     position: relative;
     overflow: hidden;
@@ -194,12 +229,11 @@ export const G = /*css*/`
     z-index: 2;
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
     transition: filter .35s;
-    animation: spinLogoReverse .6s ease forwards;
   }
   .start-btn1:hover img {
     filter: brightness(0) invert(1); 
-    animation: spinLogo .6s ease forwards;
   }
+
 
   .admin-btn {
     transition: all .2s;
@@ -207,6 +241,7 @@ export const G = /*css*/`
   .admin-btn:hover {
     box-shadow: 0 0 15px rgba(65,139,250,.5), 0 0 30px rgba(65,139,250,.3), 0 0 60px rgba(65,139,250,.15);
   }
+
 
   .layout-btn {
     background:var(--white);
@@ -231,6 +266,7 @@ export const G = /*css*/`
     background:var(--white);
   }
 
+
   .ghost-btn {
     background:transparent;
     border:.15rem solid var(--red);
@@ -248,12 +284,11 @@ export const G = /*css*/`
   }
   .ghost-btn .rmv-img {
     filter: brightness(0) saturate(100%) invert(27%) sepia(85%) saturate(2000%) hue-rotate(343deg) brightness(95%) contrast(95%);
-    animation: spinLogoReverse .6s ease forwards;
   }
   .ghost-btn:hover .rmv-img {
     filter: brightness(0) invert(1);
-    animation: spinLogo .6s ease forwards;
   }
+
 
   .back-btn {
     background: transparent;
@@ -284,6 +319,7 @@ export const G = /*css*/`
   .back-btn:hover img {
     filter: brightness(0) invert(1); 
   }
+
 
   .snap-btn {
     position: relative;
@@ -327,12 +363,11 @@ export const G = /*css*/`
     z-index: 2;
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
     transition: filter .35s;
-    animation: zoomOut .3s ease forwards;
   }
   .snap-btn:hover img {
     filter: brightness(0) invert(1); 
-    animation: zoomIn .3s ease forwards;
   }
+
 
   .snap-btnG {
     position: relative;
@@ -357,6 +392,7 @@ export const G = /*css*/`
     transition: filter .35s;
   }
 
+
   .pros-btn {
     background: transparent;
     border:.1rem solid var(--secondary);
@@ -376,6 +412,7 @@ export const G = /*css*/`
     color: var(--white) !important;
     box-shadow: 0 0 15px rgba(65,139,250,.5), 0 0 30px rgba(65,139,250,.3), 0 0 60px rgba(65,139,250,.15);
   }
+
 
   .procs-btn {
     position: relative;
@@ -419,12 +456,11 @@ export const G = /*css*/`
     z-index: 2;
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
     transition: filter .35s;
-    animation: spinLogoReverse .3s ease forwards;
   }
   .procs-btn:hover img {
     filter: brightness(0) invert(1); 
-    animation: spinLogo .3s ease forwards;
   }
+
 
   .prt-btn {
     position: relative;
@@ -470,11 +506,9 @@ export const G = /*css*/`
     z-index: 2;
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
     transition: filter .35s;
-    animation: zoomOut .3s ease forwards;
   }
   .prt-btn:hover img {
     filter: brightness(0) invert(1); 
-    animation: zoomIn .3s ease forwards;
   }
   .prt-btn:disabled {
     opacity: 0.4;
@@ -482,6 +516,7 @@ export const G = /*css*/`
     pointer-events: none;
   }
  
+
   .del-btn {
     background:transparent;
     border:none;
@@ -497,12 +532,11 @@ export const G = /*css*/`
   }
   .del-btn .rmv-img {
     filter: brightness(0) saturate(100%) invert(27%) sepia(85%) saturate(2000%) hue-rotate(343deg) brightness(95%) contrast(95%);
-    animation: spinLogoReverse .6s ease forwards;
   }
   .del-btn:hover .rmv-img {
     filter: brightness(0) saturate(100%) invert(27%) sepia(85%) saturate(2000%) hue-rotate(343deg) brightness(95%) contrast(95%);
-    animation: spinLogo .6s ease forwards;
   }
+
 
   .qr-btn {
     width:100%;
@@ -534,6 +568,7 @@ export const G = /*css*/`
     color: var(--secondary);
   }
   
+
   .send-btn {
     position: relative;
     overflow: hidden;
@@ -585,17 +620,16 @@ export const G = /*css*/`
     z-index: 2;
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
     transition: filter .35s;
-    animation: slideRightFar .6s ease forwards;
   }
   .send-btn:hover img {
     filter: brightness(0) invert(1); 
-    animation: slideLeftFar .6s ease forwards;
   }
   .send-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
   }
+
 
   .qrwc-btn {
     position: relative;
@@ -639,19 +673,16 @@ export const G = /*css*/`
     z-index: 2;
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);  
     transition: filter .35s;
-    animation: zoomOut .3s ease forwards;
   }
   .qrwc-btn:hover img {
     filter: brightness(0) invert(1); 
-    animation: zoomIn .3s ease forwards;
   }
-  
-  
   
 /* ──────────────────────────────────────────────────────────────── */
 
 
 /* ─── Zona ─────────────────────────────────────────────────────── */
+  
   .upload-zone {
     border:.5rem dashed rgba(0, 0, 0, 0.1);
     border-radius:1rem;
@@ -685,15 +716,16 @@ export const G = /*css*/`
     color: var(--secondary);
   }
 
+
   .pulse-ring {
     animation: pulseRing .8s ease-out infinite;
   }
 
-  
 /* ──────────────────────────────────────────────────────────────── */
 
 
 /* ─── Fungsi ───────────────────────────────────────────────────── */
+
 .done-yes {
     width: 100%;
     background: rgba(0,204,7,.05);
@@ -706,11 +738,13 @@ export const G = /*css*/`
     animation: slideLeft .5s ease forwards;
   }
 
+
 .scroll {
   overflow-y:auto;
   scrollbar-width:thin;
   scrollbar-color:var(--secondary) transparent;
 }
+
 
 .done-wait {
     width: 100%;
@@ -724,11 +758,11 @@ export const G = /*css*/`
     animation: slideLeft .5s ease forwards;
   }
 
-
 /* ──────────────────────────────────────────────────────────────── */
 
 
 /* ─── Teks ─────────────────────────────────────────────────────── */
+  
   .cam-scan {
     color: var(--primary);
     transition: color .2s;
@@ -742,13 +776,16 @@ export const G = /*css*/`
   .cam-scan:hover img {
     filter: brightness(0) saturate(100%) invert(39%) sepia(69%) saturate(1234%) hue-rotate(199deg) brightness(101%) contrast(97%);
   }
+
 /* ──────────────────────────────────────────────────────────────── */
 
 
 /* ─── Input Area ───────────────────────────────────────────────── */
+
 input::placeholder,textarea::placeholder {
   color:rgba(0, 0, 0, 0.2);
 }
+
 /* ──────────────────────────────────────────────────────────────── */
 
 

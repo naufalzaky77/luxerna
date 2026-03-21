@@ -1,5 +1,7 @@
 // BAGIAN OUTPUT SECTION PROSES KANAN
 
+import { useRef } from "react";
+
 export default function SectProses({
   localPath,
   setLocalPath,
@@ -15,6 +17,23 @@ export default function SectProses({
   runProcess,
 }) {
   const processDone = processStatus === "done";
+  const procsImgRef = useRef(null);
+
+  const handleProcsEnter = () => {
+    const img = procsImgRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "spinLogo .3s ease forwards";
+  };
+
+  const handleProcsLeave = () => {
+    const img = procsImgRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "spinLogoReverse .3s ease forwards";
+  };
 
   const Section = ({ title, children, style = {} }) => (
     <div className="card" style={{ padding: "20px 22px", ...style }}>
@@ -397,12 +416,15 @@ export default function SectProses({
             <button
               className="procs-btn"
               onClick={runProcess}
+              onMouseEnter={handleProcsEnter}
+              onMouseLeave={handleProcsLeave}
               style={{
                 borderRadius: ".5rem",
                 padding: ".7rem 1rem",
               }}
             >
               <img
+                ref={procsImgRef}
                 src="/assets/settings.svg"
                 alt="procs"
                 style={{

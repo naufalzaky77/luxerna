@@ -1,5 +1,7 @@
 // BAGIAN OUTPUT SECTION PRINT KANAN
 
+import { useRef } from "react";
+
 export default function SectCetak({
   printers,
   setPrinters,
@@ -18,6 +20,24 @@ export default function SectCetak({
   printerScanning,
   setPrinterScanning,
 }) {
+  const prtImgRef = useRef(null);
+
+  const handlePrtEnter = () => {
+    const img = prtImgRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "zoomIn .3s ease forwards";
+  };
+
+  const handlePrtLeave = () => {
+    const img = prtImgRef.current;
+    if (!img) return;
+    img.style.animation = "none";
+    void img.offsetWidth;
+    img.style.animation = "zoomOut .3s ease forwards";
+  };
+
   const scanPrinters = () => {
     setPrinterScanning(true);
     setPrinterDropOpen(true);
@@ -403,6 +423,8 @@ export default function SectCetak({
           <button
             className="prt-btn"
             onClick={runPrint}
+            onMouseEnter={handlePrtEnter}
+            onMouseLeave={handlePrtLeave}
             style={{
               pointerEvents:
                 !processDone || !selectedPrinter || printStatus !== "idle"
@@ -415,6 +437,7 @@ export default function SectCetak({
             }}
           >
             <img
+              ref={prtImgRef}
               src="/assets/file-arrow-right.svg"
               alt="flpr"
               style={{

@@ -46,7 +46,7 @@ export default function ViewFinder({ templatePreview, cd }) {
               width: "15rem",
               height: "15rem",
               borderRadius: "50%",
-              background: "rgba(65,139,250,.05)",
+              background: "rgba(65,139,250,.3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -58,7 +58,7 @@ export default function ViewFinder({ templatePreview, cd }) {
                 fontSize: cd === "SIAP" ? "5rem" : "13rem",
                 fontFamily: "var(--f)",
                 fontWeight: "var(--fw-semiBold)",
-                color: "rgba(65,139,250,.8)",
+                color: "rgba(65,139,250,1)",
                 letterSpacing: cd === "SIAP" ? ".3rem" : 0,
               }}
             >

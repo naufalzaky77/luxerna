@@ -1,4 +1,5 @@
-// orientation: "landscape" | "portrait"
+// DATA LAYOUT & UKURAN KERTAS
+
 export const LAYOUTS = [
   {
     id: "1foto",
