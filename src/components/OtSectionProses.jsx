@@ -150,6 +150,12 @@ export default function SectProses({
           {!pathLocked && (
             <button
               className="back-btn"
+              onClick={async () => {
+                if (window.electronAPI?.selectFolder) {
+                  const path = await window.electronAPI.selectFolder();
+                  if (path) setLocalPath(path);
+                }
+              }}
               style={{
                 padding: ".5rem .5rem",
                 cursor: "pointer",

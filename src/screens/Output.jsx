@@ -8,6 +8,7 @@ import StatusBadge from "../components/OtStatusBadge";
 import SectProses from "../components/OtSectionProses";
 import SectCetak from "../components/OtSectionCetak";
 import SectKirim from "../components/OtSectionKirim";
+import { renderComposite } from "../utils/renderComposite";
 
 export default function Output({
   photos,
@@ -57,32 +58,65 @@ export default function Output({
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrScanning, setQrScanning] = useState(false);
 
-  // Auto-Detect Printer
-  useEffect(() => {
-    if (printerLocked || selectedPrinter) return;
-    const mock = [
-      { id: "p1", name: "Canon SELPHY CP1500", status: "ready" },
-      { id: "p2", name: "Epson L805", status: "ready" },
-      { id: "p3", name: "DNP DS620A", status: "offline" },
-    ];
-  }, []);
-
   // ── Run PROSES ──
-  const runProcess = () => {
+  const runProcess = async () => {
     if (processStatus !== "idle") return;
+    if (!pathLocked || !localPath) return;
+
     setProcessStatus("running");
-    const delays = [900, 700, 1100];
-    let cum = 0;
-    delays.forEach((d, i) => {
-      cum += d;
-      setTimeout(() => {
-        setProcessSteps((prev) =>
-          prev.map((s, j) => (j === i ? { ...s, done: true } : s)),
-        );
-        setProcessProgress(Math.round(((i + 1) / delays.length) * 100));
-        if (i === delays.length - 1) setProcessStatus("done");
-      }, cum);
-    });
+
+    try {
+      // ── Step 1: Render ──
+      setProcessSteps((prev) =>
+        prev.map((s, i) => (i === 0 ? { ...s, running: true } : s)),
+      );
+      const base64 = await renderComposite({ layout, photos, templatePreview });
+      setProcessSteps((prev) =>
+        prev.map((s, i) =>
+          i === 0 ? { ...s, done: true, running: false } : s,
+        ),
+      );
+      setProcessProgress(33);
+
+      // ── Step 2: Save ──
+      setProcessSteps((prev) =>
+        prev.map((s, i) => (i === 1 ? { ...s, running: true } : s)),
+      );
+      const fileName = `foto_${String(photoIndex.current).padStart(3, "0")}.png`;
+      const data = base64.replace(/^data:image\/png;base64,/, "");
+      const result = await window.electronAPI.savePhoto({
+        folderPath: localPath,
+        eventName,
+        fileName,
+        data,
+      });
+      if (!result.success) throw new Error(result.error);
+      photoIndex.current += 1;
+      setProcessSteps((prev) =>
+        prev.map((s, i) =>
+          i === 1 ? { ...s, done: true, running: false } : s,
+        ),
+      );
+      setProcessProgress(66);
+
+      // ── Step 3: Upload cloud (skip kalau belum ada) ──
+      setProcessSteps((prev) =>
+        prev.map((s, i) => (i === 2 ? { ...s, running: true } : s)),
+      );
+      // TODO: implement Google Drive upload
+      await new Promise((r) => setTimeout(r, 500)); // placeholder
+      setProcessSteps((prev) =>
+        prev.map((s, i) =>
+          i === 2 ? { ...s, done: true, running: false } : s,
+        ),
+      );
+      setProcessProgress(100);
+
+      setProcessStatus("done");
+    } catch (err) {
+      console.error("Process error:", err);
+      setProcessStatus("idle");
+    }
   };
 
   // ── Run CETAK (cuma foto tanpa frame) ──
@@ -304,6 +338,7 @@ export default function Output({
             setQrModalOpen={setQrModalOpen}
             simulateQrScan={simulateQrScan}
             qrScanning={qrScanning}
+            selectedCamera={settings.selectedCamera}
           />
         </div>
       </div>

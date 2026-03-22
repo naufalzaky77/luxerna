@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { G } from "../styles/global.css";
 import { buildCssVars } from "../luxernaTheme";
-import { MOCK } from "../data/mockData";
 import HeadBar from "../components/CapHeadBar";
 import ViewFinder from "../components/CapViewFinder";
 import SnapButton from "../components/CapSnapButton";
@@ -16,6 +15,8 @@ export default function Capture({ settings, onDone, onBack }) {
   const [busy, setBusy] = useState(false);
   const timerRef = useRef(null);
   const allDone = photos.every(Boolean);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const shoot = (slot) => {
     if (busy) return;
@@ -31,7 +32,14 @@ export default function Capture({ settings, onDone, onBack }) {
           setCd(null);
           setTimeout(() => {
             const np = [...photos];
-            np[slot] = MOCK[slot % MOCK.length];
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            if (video && canvas) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              canvas.getContext("2d").drawImage(video, 0, 0);
+              np[slot] = canvas.toDataURL("image/jpeg");
+            }
             setPhotos(np);
             setBusy(false);
             const nx = np.findIndex((p) => p === null);
@@ -88,7 +96,11 @@ export default function Capture({ settings, onDone, onBack }) {
             padding: "28px",
           }}
         >
-          <ViewFinder templatePreview={templatePreview} cd={cd} />
+          <ViewFinder
+            cd={cd}
+            selectedCamera={settings.selectedCamera}
+            videoRef={videoRef}
+          />
           <SnapButton
             busy={busy}
             active={active}
@@ -108,6 +120,7 @@ export default function Capture({ settings, onDone, onBack }) {
           total={total}
         />
       </div>
+      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 }

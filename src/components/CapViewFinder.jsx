@@ -1,32 +1,53 @@
 // BAGIAN CAPTURE VIEW LAYAR UNTUK FOTO
 
-export default function ViewFinder({ templatePreview, cd }) {
+import { useEffect, useRef } from "react";
+
+export default function ViewFinder({ cd, selectedCamera, videoRef }) {
+  useEffect(() => {
+    if (!selectedCamera) return;
+    let stream;
+    const startCamera = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: selectedCamera.deviceId } },
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("KAMERA EROR", err);
+      }
+    };
+    startCamera();
+    return () => {
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
+  }, [selectedCamera]);
+
   return (
     <div
       style={{
         maxWidth: "90rem",
         width: "100%",
-        aspectRatio: "16/9",
+        aspectRatio: "1.543",
         position: "relative",
         overflow: "hidden",
-        background: "var(--primary)",
       }}
     >
       {/* Bagian Layar Foto Tampil */}
-      {templatePreview && (
-        <img
-          src={templatePreview}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-            pointerEvents: "none",
-          }}
-          alt=""
-        />
-      )}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+      />
 
       {/* Bagian Countdown Timer */}
       {cd !== null && (

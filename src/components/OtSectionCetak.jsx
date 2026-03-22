@@ -38,18 +38,17 @@ export default function SectCetak({
     img.style.animation = "zoomOut .3s ease forwards";
   };
 
-  const scanPrinters = () => {
+  const scanPrinters = async () => {
     setPrinterScanning(true);
     setPrinterDropOpen(true);
-    setTimeout(() => {
-      const mock = [
-        { id: "p1", name: "Canon SELPHY CP1500", status: "ready" },
-        { id: "p2", name: "Epson L805", status: "ready" },
-        { id: "p3", name: "DNP DS620A", status: "offline" },
-      ];
-      setPrinters(mock);
-      setPrinterScanning(false);
-    }, 600);
+    try {
+      const result = await window.electronAPI.listPrinters();
+      setPrinters(result.printers || []);
+    } catch (err) {
+      console.error("Scan printer error:", err);
+      setPrinters([]);
+    }
+    setPrinterScanning(false);
   };
 
   const Section = ({ title, children, style = {} }) => (
@@ -132,7 +131,6 @@ export default function SectCetak({
               if (printerDropOpen) {
                 setPrinterDropOpen(false);
               } else {
-                setPrinterDropOpen(true);
                 scanPrinters();
               }
             }}
@@ -145,14 +143,12 @@ export default function SectCetak({
               borderRadius: ".5rem",
               background: printerLocked
                 ? "rgba(0,0,0,.04)"
-                : !selectedPrinter
-                  ? "rgba(65,139,250,.04)"
-                  : "rgba(65,139,250,.04)",
+                : "rgba(65,139,250,.04)",
               border: printerLocked
                 ? ".1rem solid rgba(0,0,0,.2)"
-                : !selectedPrinter
-                  ? ".1rem solid var(--secondary)"
-                  : ".1rem solid var(--secondary)",
+                : printerLocked
+                  ? ".1rem solid rgba(0,0,0,.2)"
+                  : `.1rem solid ${printerDropOpen ? "var(--secondary)" : "var(--white)"}`,
               color: selectedPrinter ? "var(--primary)" : "rgba(0,0,0,.4)",
               fontFamily: "var(--f)",
               fontWeight: "var(--fw-medium)",
@@ -184,14 +180,15 @@ export default function SectCetak({
 
               <span
                 style={{
-                  color: printerLocked
-                    ? "rgba(0,0,0,.4)"
-                    : selectedPrinter
-                      ? "var(--primary)"
-                      : "rgba(0,0,0,.4)",
+                  fontFamily: "var(--f)",
+                  fontSize: "1rem",
                 }}
               >
-                {selectedPrinter ? selectedPrinter.name : "PILIH PENCETAK!"}
+                {printerScanning
+                  ? "Mencari pencetak..."
+                  : selectedPrinter
+                    ? selectedPrinter.name
+                    : "Pilih perangkat pencetak..."}
               </span>
             </div>
             <img
@@ -206,7 +203,9 @@ export default function SectCetak({
               }}
             />
           </button>
-          {printerDropOpen && (
+
+          {/* Dropdown */}
+          {printerDropOpen && !printerLocked && (
             <div
               style={{
                 position: "absolute",
@@ -222,7 +221,7 @@ export default function SectCetak({
               {printerScanning ? (
                 <div
                   style={{
-                    padding: "1rem 1rem",
+                    padding: "1rem",
                     color: "var(--secondary)",
                     fontFamily: "var(--f)",
                     fontWeight: "var(--fw-regular)",
@@ -244,12 +243,24 @@ export default function SectCetak({
                   />
                   Mencari...
                 </div>
+              ) : printers.length === 0 ? (
+                <div
+                  style={{
+                    padding: "1rem",
+                    color: "var(--primary)",
+                    fontFamily: "var(--f)",
+                    fontWeight: "var(--fw-regular)",
+                    fontSize: "var(--fs-h2)",
+                  }}
+                >
+                  Tidak ada printer terdeteksi
+                </div>
               ) : (
-                printers.map((p, i) => {
-                  const isActive = selectedPrinter?.id === p.id;
+                printers.map((p) => {
+                  const isActive = selectedPrinter?.name === p.name;
                   return (
                     <div
-                      key={p.id}
+                      key={p.name}
                       onClick={() => {
                         setSelectedPrinter(p);
                         setPrinterDropOpen(false);
@@ -312,33 +323,35 @@ export default function SectCetak({
                 })
               )}
 
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  scanPrinters();
-                }}
-                className="cam-scan"
-                style={{
-                  padding: "1rem 3rem",
-                  cursor: "pointer",
-                  fontFamily: "var(--f)",
-                  fontWeight: "var(--fw-medium)",
-                  fontSize: "var(--fs-h3)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: ".5rem",
-                }}
-              >
-                <img
-                  src="/assets/rotate-clockwise-2.svg"
-                  alt="rcw"
-                  style={{ width: "1rem", height: "1rem" }}
-                />
-                PINDAI ULANG
-              </div>
+              {!printerScanning && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    scanPrinters();
+                  }}
+                  className="cam-scan"
+                  style={{
+                    padding: "1rem 3rem",
+                    cursor: "pointer",
+                    fontFamily: "var(--f)",
+                    fontWeight: "var(--fw-medium)",
+                    fontSize: "var(--fs-h3)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: ".5rem",
+                  }}
+                >
+                  <img
+                    src="/assets/rotate-clockwise-2.svg"
+                    alt="rcw"
+                    style={{ width: "1rem", height: "1rem" }}
+                  />
+                  PINDAI ULANG
+                </div>
+              )}
             </div>
           )}
-          {printerDropOpen && (
+          {printerDropOpen && !printerLocked && (
             <div
               onMouseDown={() => setPrinterDropOpen(false)}
               style={{ position: "fixed", inset: 0, zIndex: 49 }}

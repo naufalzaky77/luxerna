@@ -115,64 +115,31 @@ export default function SideBar({
   retake,
   total,
 }) {
+  const photoRatio = layout.print.photo
+    ? `${layout.print.photo.w} / ${layout.print.photo.h}`
+    : "1.543";
+
   const renderStripLayout = () => {
-    if (layout.id === "grid") {
-      // Grid: 1 besar kiri atas, 2 bawah kiri, 3 atas kanan, 4 bawah kanan
+    // Layout dengan slot custom (4 grid)
+    if (layout.print.slots) {
       return (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "5px",
-          }}
-        >
-          <div style={{ gridColumn: "1", gridRow: "1" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {layout.print.slots.map((s, i) => (
             <SlotThumb
-              idx={0}
+              key={i}
+              idx={i}
               photos={photos}
               active={active}
               busy={busy}
               setActive={setActive}
               retake={retake}
-              aspect="3/4"
+              aspect={`${s.w} / ${s.h}`}
             />
-          </div>
-          <div style={{ gridColumn: "2", gridRow: "1" }}>
-            <SlotThumb
-              idx={2}
-              photos={photos}
-              active={active}
-              busy={busy}
-              setActive={setActive}
-              retake={retake}
-              aspect="4/3"
-            />
-          </div>
-          <div style={{ gridColumn: "1", gridRow: "2" }}>
-            <SlotThumb
-              idx={1}
-              photos={photos}
-              active={active}
-              busy={busy}
-              setActive={setActive}
-              retake={retake}
-              aspect="4/3"
-            />
-          </div>
-          <div style={{ gridColumn: "2", gridRow: "2" }}>
-            <SlotThumb
-              idx={3}
-              photos={photos}
-              active={active}
-              busy={busy}
-              setActive={setActive}
-              retake={retake}
-              aspect="4/3"
-            />
-          </div>
+          ))}
         </div>
       );
     }
+
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         {Array.from({ length: total }).map((_, i) => (
@@ -184,7 +151,7 @@ export default function SideBar({
             busy={busy}
             setActive={setActive}
             retake={retake}
-            aspect="4/3"
+            aspect={photoRatio}
           />
         ))}
       </div>

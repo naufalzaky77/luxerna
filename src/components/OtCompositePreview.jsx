@@ -1,33 +1,26 @@
 // BAGIAN OUTPUT FRAME + FOTO DI KIRI
 
 export default function CompositePreview({ photos, layout, templatePreview }) {
-  const isLand = layout.orientation === "landscape";
-  const W = isLand ? "100%" : "140px";
+  const { print } = layout;
+  const { paper } = print;
+  const ratio = `${paper.w} / ${paper.h}`;
 
-  const photoGrid = () => {
-    if (layout.id === "grid")
+  const renderPhotos = () => {
+    //Layout custom slots (4 grid)
+    if (print.slots) {
+      const scaleX = 100 / paper.w;
+      const scaleY = 100 / paper.h;
       return (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.4fr 1fr",
-            gridTemplateRows: "1fr 1fr",
-            gap: "2px",
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          {[
-            { c: "1", r: "1", i: 0 },
-            { c: "1", r: "2", i: 1 },
-            { c: "2", r: "1", i: 2 },
-            { c: "2", r: "2", i: 3 },
-          ].map(({ c, r, i }) => (
+        <div style={{ position: "absolute", inset: 0 }}>
+          {print.slots.map((s, i) => (
             <div
               key={i}
               style={{
-                gridColumn: c,
-                gridRow: r,
+                position: "absolute",
+                left: `${s.x * scaleX}%`,
+                top: `${s.y * scaleY}%`,
+                width: `${s.w * scaleX}%`,
+                height: `${s.h * scaleY}%`,
                 background: "#1a1a1a",
                 overflow: "hidden",
               }}
@@ -43,24 +36,50 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
           ))}
         </div>
       );
+    }
+
+    //Layout reguler (cols x rows)
+    const { cols, rows, photo, margin, gap } = print;
+    const scaleX = 100 / paper.w;
+    const scaleY = 100 / paper.h;
+    const slotW = photo.w * scaleX;
+    const slotH = photo.h * scaleY;
+    const gapX = gap.x * scaleX;
+    const gapY = gap.y * scaleY;
+    const marginL = margin.left * scaleX;
+    const marginT = margin.top * scaleY;
+
+    const slots = [];
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        slots.push({
+          x: marginL + c * (slotW + gapX),
+          y: marginT + r * (slotH + gapY),
+          w: slotW,
+          h: slotH,
+          i: r * cols + c,
+        });
+      }
+    }
+
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          height: "100%",
-          gap: "2px",
-        }}
-      >
-        {photos.map((p, i) => (
+      <div style={{ position: "absolute", inset: 0 }}>
+        {slots.map((s) => (
           <div
-            key={i}
-            style={{ flex: 1, background: "#1a1a1a", overflow: "hidden" }}
+            key={s.i}
+            style={{
+              position: "absolute",
+              left: `${s.x}%`,
+              top: `${s.y}%`,
+              width: `${s.w}%`,
+              height: `${s.h}%`,
+              background: "#1a1a1a",
+              overflow: "hidden",
+            }}
           >
-            {p && (
+            {photos[s.i] && (
               <img
-                src={p}
+                src={photos[s.i]}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 alt=""
               />
@@ -74,17 +93,16 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
   return (
     <div
       style={{
-        width: W,
-        aspectRatio: isLand ? "4/3" : "3/4",
+        width: "100%",
+        aspectRatio: ratio,
         borderRadius: "10px",
         overflow: "hidden",
-        background: "#111",
+        background: "white",
         position: "relative",
-        border: "1px solid rgba(0,0,0,.1)",
         boxShadow: "0 12px 40px rgba(0,0,0,.6)",
       }}
     >
-      {photoGrid()}
+      {/* Layer 1 — frame template */}
       {templatePreview && (
         <img
           src={templatePreview}
@@ -95,10 +113,16 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
             height: "100%",
             objectFit: "fill",
             pointerEvents: "none",
+            zIndex: 0,
           }}
           alt=""
         />
       )}
+
+      {/* Layer 2 — foto */}
+      <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+        {renderPhotos()}
+      </div>
     </div>
   );
 }

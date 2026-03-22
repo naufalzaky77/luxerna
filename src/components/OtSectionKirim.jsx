@@ -1,6 +1,6 @@
 // BAGIAN OUTPUT SECTION KIRIM KANAN
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export default function SectKirim({
   processDone,
@@ -24,12 +24,33 @@ export default function SectKirim({
   setQrModalOpen,
   simulateQrScan,
   qrScanning,
+  selectedCamera,
 }) {
   const sendImgRef = useRef(null);
   const delImg1Ref = useRef(null);
   const delImg2Ref = useRef(null);
   const delImg3Ref = useRef(null);
   const qrwcImgRef = useRef(null);
+  const qrVideoRef = useRef(null);
+
+  useEffect(() => {
+    if (!qrModalOpen || !selectedCamera) return;
+    let stream;
+    const startCam = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: selectedCamera.deviceId } },
+        });
+        if (qrVideoRef.current) qrVideoRef.current.srcObject = stream;
+      } catch (err) {
+        console.error("QR cam error:", err);
+      }
+    };
+    startCam();
+    return () => {
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    };
+  }, [qrModalOpen, selectedCamera]);
 
   const makeAnimHandlers = (ref, enterAnim, leaveAnim) => ({
     onMouseEnter: () => {
@@ -608,7 +629,7 @@ export default function SectKirim({
               </div>
             </div>
 
-            {/* Webcam viewfinder mock */}
+            {/* Webcam viewfinder */}
             <div
               style={{
                 width: "100%",
@@ -620,6 +641,13 @@ export default function SectKirim({
                 marginBottom: "1rem",
               }}
             >
+              <video
+                ref={qrVideoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
               {/* Scan frame pojokan */}
               <div
                 style={{

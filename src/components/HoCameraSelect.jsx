@@ -8,15 +8,20 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
   const [cameraScanning, setCameraScanning] = useState(false);
 
   const scanCameras = async () => {
+    console.log("scanCameras dipanggil");
+    console.log("mediaDevices:", navigator.mediaDevices);
     setCameraScanning(true);
     setCameraDropdownOpen(true);
     try {
+      console.log("Minta permission kamera...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log("Permission granted, stream:", stream);
       stream.getTracks().forEach((t) => t.stop());
       const devices = await navigator.mediaDevices.enumerateDevices();
-      const vids = devices.filter(
-        (d) => d.kind === "videoinput" && d.label !== "",
-      );
+      console.log("All devices:", devices);
+      const vids = devices.filter((d) => d.kind === "videoinput");
+      console.log("Video inputs:", vids);
+
       onSettingsChange({
         ...settings,
         cameras: vids,

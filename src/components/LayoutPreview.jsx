@@ -1,153 +1,147 @@
 export default function LayoutPreview({ layout, templatePreview }) {
   const isLand = layout.orientation === "landscape";
   const gap = 3;
+  const PREVIEW_MAX = 220;
+  const { w, h } = layout.print.paper;
+  const ratio = w / h;
+  const W = ratio >= 1 ? PREVIEW_MAX : Math.round(PREVIEW_MAX * ratio);
+  const H = ratio >= 1 ? Math.round(PREVIEW_MAX / ratio) : PREVIEW_MAX;
 
-  const cell = (label, style = {}) => (
-    <div
-      style={{
-        background: "#1c1c1c",
-        overflow: "hidden",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        ...style,
-      }}
-    >
-      <span
-        style={{
-          color: "#3a3a3a",
-          fontSize: "14px",
-          fontFamily: "var(--fd)",
-          userSelect: "none",
-        }}
-      >
-        {label}
-      </span>
-    </div>
-  );
+  const renderCells = () => {
+    const { print, shots } = layout;
 
-  const gW = 220;
-  const smallW = Math.round((gW - gap) / 2);
-  const smallH = Math.round((smallW * 3) / 4);
-  const gH = smallH * 2 + gap;
-  const bigH = gH - gap - smallH;
-
-  const renderGrid = () => (
-    <div
-      style={{
-        display: "flex",
-        gap: `${gap}px`,
-        width: gW,
-        height: gH,
-        flexShrink: 0,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: `${gap}px`,
-          width: smallW,
-          flexShrink: 0,
-        }}
-      >
-        {cell("1", { height: bigH, borderRadius: "0 0 0 0" })}
-        {cell("2", { height: smallH, borderRadius: "0 0 0 0" })}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: `${gap}px`,
-          width: smallW,
-          flexShrink: 0,
-        }}
-      >
-        {cell("3", { height: smallH, borderRadius: "0 0 0 0" })}
-        {cell("4", { height: smallH, borderRadius: "0 0 0 0" })}
-      </div>
-    </div>
-  );
-
-  const sW = isLand ? 220 : 150;
-  const sH = isLand ? 165 : 220;
-
-  const renderSimple = () => {
-    if (layout.id === "1foto")
+    // Layout dengan slots custom (4grid)
+    if (print.slots) {
+      const { slots, paper } = print;
+      const scaleX = W / paper.w;
+      const scaleY = H / paper.h;
       return (
-        <div style={{ width: sW, height: sH }}>
-          {cell("1", { width: "100%", height: "100%", borderRadius: "0" })}
+        <div style={{ position: "relative", width: W, height: H }}>
+          {slots.map((s, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: s.x * scaleX,
+                top: s.y * scaleY,
+                width: s.w * scaleX,
+                height: s.h * scaleY,
+                background: "var(--primary)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{
+                  color: "var(--secondary)",
+                  fontSize: "var(--fs-h2)",
+                  fontWeight: "var(--fw-medium)",
+                  fontFamily: "var(--f)",
+                }}
+              >
+                {i + 1}
+              </span>
+            </div>
+          ))}
         </div>
       );
-    const count = layout.id === "2strip" ? 2 : 3;
+    }
+
+    // Layout grid/strip reguler (cols x rows)
+    const { cols, rows, photo } = print;
+    const cellW = (W - gap * (cols + 1)) / cols;
+    const cellH = cellW * (photo.h / photo.w);
     return (
       <div
         style={{
-          width: sW,
-          height: sH,
+          width: W,
+          height: H,
           display: "flex",
           flexDirection: "column",
           gap: `${gap}px`,
+          padding: `${gap}px`,
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {Array.from({ length: count }).map((_, i) =>
-          cell(String(i + 1), {
-            flex: 1,
-            borderRadius:
-              i === 0 ? "0 0 0 0" : i === count - 1 ? "0 0 0 0" : "0",
-          }),
-        )}
+        {Array.from({ length: rows }).map((_, r) => (
+          <div key={r} style={{ display: "flex", gap: `${gap}px` }}>
+            {Array.from({ length: cols }).map((_, c) => (
+              <div
+                key={c}
+                style={{
+                  width: cellW,
+                  height: cellH,
+                  background: "var(--primary)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  style={{
+                    color: "var(--secondary)",
+                    fontSize: "var(--fs-h2)",
+                    fontWeight: "var(--fw-medium)",
+                    fontFamily: "var(--f)",
+                  }}
+                >
+                  {r * cols + c + 1}
+                </span>
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     );
   };
 
-  const isGrid = layout.id === "grid";
-  const W = isGrid ? gW : sW;
-  const H = isGrid ? gH : sH;
+  const FRAME_SCALE = 1.3;
+  const FW = W * FRAME_SCALE;
+  const FH = H * FRAME_SCALE;
 
   return (
     <div
       style={{
         width: W,
         height: H,
-        // borderRadius: "10px",
-        overflow: "hidden",
-        border: "1px solid var(--bdr2)",
         position: "relative",
-        boxShadow: "0 8px 32px rgba(0,0,0,.5)",
         flexShrink: 0,
       }}
     >
-      {isGrid ? renderGrid() : renderSimple()}
+      {/* Layer 1 — frame template (di belakang foto) */}
       {templatePreview && (
         <img
           src={templatePreview}
           style={{
             position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
+            left: -(FW - W) / 2,
+            top: -(FH - H) / 2,
+            width: FW,
+            height: FH,
             objectFit: "fill",
             pointerEvents: "none",
+            zIndex: 0,
           }}
           alt="template"
         />
       )}
+
+      {/* Layer 1 — kertas putih */}
       <div
         style={{
           position: "absolute",
-          bottom: "7px",
-          right: "8px",
-          background: "rgba(0,0,0,.8)",
-          border: "1px solid rgba(201,168,76,.3)",
-          // borderRadius: "5px",
-          padding: "2px 7px",
-          color: "var(--gold)",
-          fontSize: "9px",
-          letterSpacing: "1.5px",
+          inset: 0,
+          background: "white",
+          zIndex: 1,
+          boxShadow: "0 8px 32px rgba(0,0,0,.5)",
+          overflow: "hidden",
         }}
       >
-        {isLand ? "LANDSCAPE" : "PORTRAIT"}
+        {/* Layer 2 — area foto (paling depan) */}
+        <div style={{ position: "relative", zIndex: 2 }}>{renderCells()}</div>
       </div>
     </div>
   );
