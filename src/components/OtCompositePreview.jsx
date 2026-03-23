@@ -6,7 +6,7 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
   const ratio = `${paper.w} / ${paper.h}`;
 
   const renderPhotos = () => {
-    //Layout custom slots (4 grid)
+    // ------- LAYOUT CUSTOM 4 GRID ------- //
     if (print.slots) {
       const scaleX = 100 / paper.w;
       const scaleY = 100 / paper.h;
@@ -38,7 +38,7 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
       );
     }
 
-    //Layout reguler (cols x rows)
+    // ------- LAYOUT REGULER (COL X ROW) ------- //
     const { cols, rows, photo, margin, gap } = print;
     const scaleX = 100 / paper.w;
     const scaleY = 100 / paper.h;
@@ -102,7 +102,7 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
         boxShadow: "0 12px 40px rgba(0,0,0,.6)",
       }}
     >
-      {/* Layer 1 — frame template */}
+      {/* LAYER 0 - FRAME TEMPLATE */}
       {templatePreview && (
         <img
           src={templatePreview}
@@ -119,7 +119,7 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
         />
       )}
 
-      {/* Layer 2 — foto */}
+      {/* LAYER 1 - FOTO AREA */}
       <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
         {renderPhotos()}
       </div>

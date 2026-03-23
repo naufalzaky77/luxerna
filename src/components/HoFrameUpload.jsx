@@ -59,7 +59,7 @@ export default function FrameUpload({
         DESAIN FRAME
       </div>
 
-      {/* Bagian Zona Upload */}
+      {/* BAGIAN ZONA UPLOAD */}
       <input
         ref={fileRef}
         type="file"

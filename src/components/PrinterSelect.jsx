@@ -1,84 +1,94 @@
-// BAGIAN HOME PILIH KAMERA
-
-import { useState } from "react";
-
-export default function CameraSelect({ locked, settings, onSettingsChange }) {
-  const { selectedCamera, cameras } = settings;
-  const [cameraDropdownOpen, setCameraDropdownOpen] = useState(false);
-  const [cameraScanning, setCameraScanning] = useState(false);
-
-  const scanCameras = async () => {
-    setCameraScanning(true);
-    setCameraDropdownOpen(true);
+export default function PrinterSelect({
+  printers,
+  setPrinters,
+  selectedPrinter,
+  setSelectedPrinter,
+  printerDropOpen,
+  setPrinterDropOpen,
+  printerScanning,
+  setPrinterScanning,
+  printerLocked,
+}) {
+  const scanPrinters = async () => {
+    setPrinterScanning(true);
+    setPrinterDropOpen(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-
-      stream.getTracks().forEach((t) => t.stop());
-      const devices = await navigator.mediaDevices.enumerateDevices();
-
-      const vids = devices.filter((d) => d.kind === "videoinput");
-
-      onSettingsChange({
-        ...settings,
-        cameras: vids,
-        selectedCamera: settings.selectedCamera ?? null,
-      });
-    } catch {
-      onSettingsChange({ ...settings, cameras: [], selectedCamera: null });
+      const result = await window.electronAPI.listPrinters();
+      setPrinters(result.printers || []);
+    } catch (err) {
+      console.error("Scan printer error:", err);
+      setPrinters([]);
     }
-    setCameraScanning(false);
+    setPrinterScanning(false);
   };
 
   return (
+    //* ------- BAGIAN BAR PRINTER ------- *//
     <div style={{ position: "relative" }}>
-      <div
-        style={{
-          color: "var(--primary)",
-          fontFamily: "var(--f)",
-          fontSize: "var(--fs-h3)",
-          fontWeight: "var(--fw-medium)",
-          letterSpacing: ".1rem",
-          marginBottom: ".5rem",
-        }}
-      >
-        PERANGKAT KAMERA
-      </div>
-
-      {/* BAGIAN BAR KAMERA */}
       <button
-        onClick={() => !locked && scanCameras()}
+        onClick={() => {
+          if (printerLocked) return;
+          if (printerDropOpen) {
+            setPrinterDropOpen(false);
+          } else {
+            scanPrinters();
+          }
+        }}
         style={{
           width: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           padding: ".7rem 1rem",
-          borderRadius: ".7rem",
-          cursor: locked ? "default" : "pointer",
-          background: "var(--white)",
-          border: `3px solid ${cameraDropdownOpen ? "var(--secondary)" : "var(--white)"}`,
-          color: selectedCamera ? "var(--secondary)" : "rgba(0, 0, 0, 0.4)",
+          borderRadius: ".5rem",
+          background: printerLocked
+            ? "rgba(0,0,0,.04)"
+            : "rgba(65,139,250,.04)",
+          border: printerLocked
+            ? ".1rem solid rgba(0,0,0,.2)"
+            : printerLocked
+              ? ".1rem solid rgba(0,0,0,.2)"
+              : `.1rem solid ${printerDropOpen ? "var(--secondary)" : "var(--white)"}`,
+          color: selectedPrinter ? "var(--primary)" : "rgba(0,0,0,.4)",
           fontFamily: "var(--f)",
-          fontSize: "var(--fs-h3)",
           fontWeight: "var(--fw-medium)",
+          fontSize: "1rem",
+          cursor: !printerLocked ? "pointer" : "default",
           transition: "all .2s",
           textAlign: "left",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
           <img
-            src="/assets/camera-plus.svg"
-            alt="cpic"
-            className={selectedCamera ? "ic-blue" : "ic-grey"}
-            style={{ width: "1.5rem", height: "1.5rem" }}
+            src="/assets/printer.svg"
+            alt="prt"
+            className={
+              printerLocked
+                ? "ic-grey"
+                : selectedPrinter
+                  ? "ic-blue"
+                  : "ic-blue"
+            }
+            style={{ width: "1.3rem", height: "1.3rem" }}
           />
-          <span style={{ fontFamily: "var(--f)", fontSize: "1rem" }}>
-            {cameraScanning
-              ? "Mencari kamera..."
-              : selectedCamera
-                ? selectedCamera.label ||
-                  `Kamera ${cameras.indexOf(selectedCamera) + 1}`
-                : "PILIH KAMERA!"}
+
+          <span
+            style={{
+              fontFamily: "var(--f)",
+              fontSize: "1rem",
+            }}
+          >
+            {printerScanning
+              ? "Mencari pencetak..."
+              : selectedPrinter
+                ? selectedPrinter.name
+                : "Pilih perangkat pencetak..."}
           </span>
         </div>
         <img
@@ -88,14 +98,14 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
           style={{
             width: "1rem",
             height: "1rem",
-            transform: cameraDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transform: printerDropOpen ? "rotate(180deg)" : "rotate(0deg)",
             transition: "transform .2s",
           }}
         />
       </button>
 
-      {/* BAGIAN DROPDOWN BAR KAMERA */}
-      {cameraDropdownOpen && !locked && (
+      {/* ------- DROPDOWN -------  */}
+      {printerDropOpen && !printerLocked && (
         <div
           style={{
             position: "absolute",
@@ -108,10 +118,10 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
             animation: "fadeUp .18s ease",
           }}
         >
-          {cameraScanning ? (
+          {printerScanning ? (
             <div
               style={{
-                padding: "1rem 1rem",
+                padding: "1rem",
                 color: "var(--secondary)",
                 fontFamily: "var(--f)",
                 fontWeight: "var(--fw-regular)",
@@ -133,27 +143,27 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
               />
               Mencari...
             </div>
-          ) : cameras.length === 0 ? (
+          ) : printers.length === 0 ? (
             <div
               style={{
-                padding: "1rem 1rem",
+                padding: "1rem",
                 color: "var(--primary)",
                 fontFamily: "var(--f)",
                 fontWeight: "var(--fw-regular)",
                 fontSize: "var(--fs-h2)",
               }}
             >
-              Tidak ada kamera terdeteksi
+              Tidak ada printer terdeteksi
             </div>
           ) : (
-            cameras.map((cam, i) => {
-              const isActive = selectedCamera?.deviceId === cam.deviceId;
+            printers.map((p) => {
+              const isActive = selectedPrinter?.name === p.name;
               return (
                 <div
-                  key={cam.deviceId}
+                  key={p.name}
                   onClick={() => {
-                    onSettingsChange({ ...settings, selectedCamera: cam });
-                    setCameraDropdownOpen(false);
+                    setSelectedPrinter(p);
+                    setPrinterDropOpen(false);
                   }}
                   style={{
                     padding: ".7rem 1rem",
@@ -189,10 +199,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
                         src="/assets/circle-check.svg"
                         alt="ccc"
                         className="ic-blue"
-                        style={{
-                          width: "1.3rem",
-                          height: "1.3rem",
-                        }}
+                        style={{ width: "1.3rem", height: "1.3rem" }}
                       />
                     )}
                     <div
@@ -206,16 +213,20 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
                         textOverflow: "ellipsis",
                       }}
                     >
-                      {cam.label || `Kamera ${i + 1}`}
+                      {p.name}
                     </div>
                   </div>
                 </div>
               );
             })
           )}
-          {!cameraScanning && (
+
+          {!printerScanning && (
             <div
-              onClick={scanCameras}
+              onClick={(e) => {
+                e.stopPropagation();
+                scanPrinters();
+              }}
               className="cam-scan"
               style={{
                 padding: "1rem 3rem",
@@ -231,19 +242,16 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
               <img
                 src="/assets/rotate-clockwise-2.svg"
                 alt="rcw"
-                style={{
-                  width: "1rem",
-                  height: "1rem",
-                }}
+                style={{ width: "1rem", height: "1rem" }}
               />
               PINDAI ULANG
             </div>
           )}
         </div>
       )}
-      {cameraDropdownOpen && !locked && (
+      {printerDropOpen && !printerLocked && (
         <div
-          onClick={() => setCameraDropdownOpen(false)}
+          onMouseDown={() => setPrinterDropOpen(false)}
           style={{ position: "fixed", inset: 0, zIndex: 49 }}
         />
       )}

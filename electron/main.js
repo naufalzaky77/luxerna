@@ -54,6 +54,18 @@ function createWindow() {
     : `file://${path.join(__dirname, "../build/index.html")}`;
 
   mainWindow.loadURL(startUrl);
+
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+  callback({
+    responseHeaders: {
+      ...details.responseHeaders,
+      'Content-Security-Policy': [
+        "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self'"
+      ]
+    }
+  });
+  });
+
   if (isDev) mainWindow.webContents.openDevTools();
 }
 
@@ -85,7 +97,10 @@ ipcMain.handle("file:savePhoto", async (_, { folderPath, eventName, fileName, da
   }
 });
 
-ipcMain.handle("file:openFolder", async (_, folderPath) => {
+ipcMain.handle("file:openFolder", async (_, folderPath, eventName) => {
+  const fullPath = eventName 
+    ? path.join(folderPath, sanitizeFolderName(eventName))
+    : folderPath;
   shell.openPath(folderPath);
 });
 
@@ -161,5 +176,60 @@ ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1 })
       if (error) console.error("Fallback print error:", error);
     });
     return { success: true, note: "Using fallback print method" };
+  }
+});
+
+
+// ─── WhatsApp ─────────────────────────────────────────────────────────────────
+ipcMain.handle("wa:openChat", async (_, { waNumber, eventName }) => {
+  try {
+    const text = encodeURIComponent(`${eventName}\nTerima kasih sudah hadir! Ini foto sebagai kenang-kenangan.`);
+    const url = `https://wa.me/${waNumber}?text=${text}`;
+    shell.openExternal(url);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+
+ipcMain.handle("file:readCSV", async (_, filePath) => {
+  try {
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.trim().split("\n");
+    const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+    const data = lines.slice(1).map(line => {
+      const values = line.split(",").map(v => v.trim());
+      return {
+        id: values[headers.indexOf("id")] || "",
+        name: values[headers.indexOf("name")] || values[headers.indexOf("nama")] || "",
+        wa: values[headers.indexOf("wa")] || values[headers.indexOf("whatsapp")] || "",
+      };
+    }).filter(g => g.id || g.name);
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle("dialog:selectFile", async (_, { filters }) => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ["openFile"],
+    filters: filters || [],
+  });
+  return result.canceled ? null : result.filePaths[0];
+});
+
+ipcMain.handle("file:getLastPhotoIndex", async (_, { folderPath, eventName }) => {
+  try {
+    const eventFolder = path.join(folderPath, sanitizeFolderName(eventName));
+    if (!fs.existsSync(eventFolder)) return { lastIndex: 0 };
+    const files = fs.readdirSync(eventFolder)
+      .filter(f => f.match(/^IMG_(\d+)\.png$/));
+    if (files.length === 0) return { lastIndex: 0 };
+    const indices = files.map(f => parseInt(f.match(/^IMG_(\d+)\.png$/)[1]));
+    return { lastIndex: Math.max(...indices) };
+  } catch (err) {
+    return { lastIndex: 0 };
   }
 });

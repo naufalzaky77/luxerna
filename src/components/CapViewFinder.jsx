@@ -34,7 +34,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef }) {
         overflow: "hidden",
       }}
     >
-      {/* Bagian Layar Foto Tampil */}
+      {/* BAGIAN LAYAR KAMERA FOTO */}
       <video
         ref={videoRef}
         autoPlay
@@ -49,7 +49,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef }) {
         }}
       />
 
-      {/* Bagian Countdown Timer */}
+      {/* BAGIAN COUNTDOWN TIMER */}
       {cd !== null && (
         <div
           style={{

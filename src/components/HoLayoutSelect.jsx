@@ -1,6 +1,6 @@
 // BAGIAN HOME PILIHAN LAYOUT FOTO
 
-import { LAYOUTS } from "../data/mockData";
+import { LAYOUTS } from "../data/layoutData";
 
 export default function LayoutSelect({
   layout,
@@ -25,7 +25,7 @@ export default function LayoutSelect({
         SUSUNAN FOTO
       </div>
 
-      {/* Bagian Kolom Jenis Layout */}
+      {/* BAGIAN KOLOM JENIS LAYOUT */}
       <div
         style={{
           display: "grid",

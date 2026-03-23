@@ -1,4 +1,4 @@
-import { LAYOUTS } from "./data/mockData";
+import { LAYOUTS } from "./data/layoutData";
 import { buildCssVars } from "./luxernaTheme";
 import { G } from "./styles/global.css";
 import { useState, useEffect, useRef } from "react";
@@ -17,6 +17,7 @@ export default function App() {
   const [screen, setScreen] = useState("home");
   const [photos, setPhotos] = useState([]);
   const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [guestDB, setGuestDB] = useState([]);
 
   // Persistent path settings (locked once set)
   const [localPath, setLocalPath]     = useState("");
@@ -27,6 +28,7 @@ export default function App() {
   const [printers, setPrinters]           = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState(null);
   const [printerLocked, setPrinterLocked] = useState(false);
+  const photoIndex = useRef(1);
 
   // Global session settings — persist across screens
   const [settings, setSettings] = useState({
@@ -37,7 +39,27 @@ export default function App() {
     cameras: [],
     eventName: "",
     cameraLocked: false,
+    guestCSV: null,
   });
+
+  // Load CSV saat start atau saat path CSV berubah
+  useEffect(() => {
+    if (!settings.guestCSV) return;
+    loadCSV(settings.guestCSV);
+  }, [settings.guestCSV]);
+
+  const loadCSV = async (filePath) => {
+    try {
+      const result = await window.electronAPI.readCSV(filePath);
+      if (result.success) {
+        setGuestDB(result.data);
+        console.log("Guest DB loaded:", result.data.length, "tamu");
+      }
+    } catch (err) {
+      console.error("Load CSV error:", err);
+    }
+  };
+
 
   const handleToggleAdmin = () => {
     setAdminUnlocked(!adminUnlocked);
@@ -76,6 +98,8 @@ export default function App() {
           printers={printers} setPrinters={setPrinters}
           selectedPrinter={selectedPrinter} setSelectedPrinter={setSelectedPrinter}
           printerLocked={printerLocked} setSelectedPrinterLocked={setPrinterLocked}
+          guestDB={guestDB}
+          photoIndex={photoIndex}
           onBack={()=>setScreen("capture")}
         />
       )}

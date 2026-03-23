@@ -15,7 +15,7 @@ export default function StatusBadge({
         width: "100%",
       }}
     >
-      {/* Status badge */}
+      {/* STATUS BADGE PROSES */}
       {processDone && (
         <div className="done-yes">
           <img
@@ -54,7 +54,7 @@ export default function StatusBadge({
         </div>
       )}
 
-      {/* Status Badge Print - Sudah Tercetak */}
+      {/* STATUS BADGE PRINT - Sudah Tercetak */}
       {Array.from({ length: printDone }).map((_, i) => (
         <div key={i} className="done-yes">
           <img
@@ -93,7 +93,7 @@ export default function StatusBadge({
         </div>
       ))}
 
-      {/* Status Badge Print */}
+      {/* STATUS BADGE PRINT - Sedang Cetak */}
       {printStatus === "printing" && (
         <div className="done-wait">
           <img
@@ -132,7 +132,7 @@ export default function StatusBadge({
         </div>
       )}
 
-      {/* Status Badge Kirim */}
+      {/* STATUS BADGE KIRIM */}
       {waStatus === "done" && (
         <div className="done-yes">
           <img

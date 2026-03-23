@@ -1,6 +1,10 @@
 // BAGIAN OUTPUT SECTION KIRIM KANAN
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
+import KirimModeNama from "./KirimModeNama";
+import KirimModeWA from "./KirimModeWA";
+import KirimModeQR from "./KirimModeQR";
+import QRModal from "./QRModal";
 
 export default function SectKirim({
   processDone,
@@ -25,32 +29,10 @@ export default function SectKirim({
   simulateQrScan,
   qrScanning,
   selectedCamera,
+  guestDB = [],
 }) {
   const sendImgRef = useRef(null);
-  const delImg1Ref = useRef(null);
-  const delImg2Ref = useRef(null);
   const delImg3Ref = useRef(null);
-  const qrwcImgRef = useRef(null);
-  const qrVideoRef = useRef(null);
-
-  useEffect(() => {
-    if (!qrModalOpen || !selectedCamera) return;
-    let stream;
-    const startCam = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: selectedCamera.deviceId } },
-        });
-        if (qrVideoRef.current) qrVideoRef.current.srcObject = stream;
-      } catch (err) {
-        console.error("QR cam error:", err);
-      }
-    };
-    startCam();
-    return () => {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-    };
-  }, [qrModalOpen, selectedCamera]);
 
   const makeAnimHandlers = (ref, enterAnim, leaveAnim) => ({
     onMouseEnter: () => {
@@ -75,26 +57,10 @@ export default function SectKirim({
     "slideRightFar .6s ease forwards",
   );
 
-  const del1Handlers = makeAnimHandlers(
-    delImg1Ref,
-    "spinLogo .3s ease forwards",
-    "spinLogoReverse .3s ease forwards",
-  );
-  const del2Handlers = makeAnimHandlers(
-    delImg2Ref,
-    "spinLogo .3s ease forwards",
-    "spinLogoReverse .3s ease forwards",
-  );
   const del3Handlers = makeAnimHandlers(
     delImg3Ref,
     "spinLogo .3s ease forwards",
     "spinLogoReverse .3s ease forwards",
-  );
-
-  const qrwcHandlers = makeAnimHandlers(
-    qrwcImgRef,
-    "zoomIn .3s ease forwards",
-    "zoomOut .3s ease forwards",
   );
 
   const Section = ({ title, children, style = {} }) => (
@@ -154,7 +120,7 @@ export default function SectKirim({
           backgroundColor: "var(--white)",
         }}
       >
-        {/* Mode toggle */}
+        {/* MODE TOGGLE GESER */}
         <div
           style={{
             display: "flex",
@@ -196,278 +162,33 @@ export default function SectKirim({
           ))}
         </div>
 
-        {/* ── MODE: Nama / ID ── */}
         {guestMode === "name" && (
-          <div style={{ position: "relative", marginBottom: "1rem" }}>
-            <div style={{ position: "relative" }}>
-              <input
-                type="text"
-                value={guestQuery}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^a-zA-Z\s]/g, "");
-                  searchGuest(val);
-                }}
-                placeholder="Ketik nama tamu..."
-                style={{
-                  paddingLeft: "2.8rem",
-                  flex: 1,
-                  cursor: "text",
-                  border: ".1rem solid var(--secondary)",
-                  background: "rgba(65,139,250,.04)",
-                  fontFamily: "var(--f)",
-                  fontWeight: "var(--fw-medium)",
-                  fontSize: "1rem",
-                  color: "var(--primary)",
-                }}
-              />
-
-              <img
-                src="/assets/search.svg"
-                alt="nama"
-                className="ic-blue"
-                style={{
-                  position: "absolute",
-                  left: "1rem",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: "1.3rem",
-                  height: "1.3rem",
-                  pointerEvents: "none",
-                }}
-              />
-
-              {guestQuery && (
-                <button
-                  onClick={() => {
-                    setGuestQuery("");
-                    setGuestResults([]);
-                    setSelectedGuest(null);
-                    setWaStatus("idle");
-                  }}
-                  className="del-btn"
-                  {...del1Handlers}
-                  style={{
-                    flexShrink: 0,
-                    position: "absolute",
-                    right: ".7rem",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                  }}
-                >
-                  <img
-                    ref={delImg1Ref}
-                    src="/assets/x.svg"
-                    alt="rmv"
-                    className="rmv-img"
-                    style={{
-                      width: "1.5rem",
-                      height: "1.5rem",
-                    }}
-                  />
-                </button>
-              )}
-            </div>
-
-            {/* Dropdown results */}
-            {guestResults.length > 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  zIndex: 50,
-                  background: "var(--white)",
-                  borderRadius: "1rem",
-                  overflow: "hidden",
-                  animation: "fadeUp .18s ease",
-                }}
-              >
-                {guestResults.map((g, i) => (
-                  <div
-                    key={g.id}
-                    onClick={() => selectGuest(g)}
-                    style={{
-                      padding: "1rem 1rem",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      transition: "background .15s",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background = "rgba(0,0,0,.1)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "transparent")
-                    }
-                  >
-                    <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          color: "var(--secondary)",
-                          fontFamily: "var(--f)",
-                          fontWeight: "var(--fw-medium)",
-                          fontSize: ".8rem",
-                        }}
-                      >
-                        {g.name}
-                      </div>
-                      <div
-                        style={{
-                          color: "rgba(0,0,0,.4)",
-                          fontFamily: "var(--f)",
-                          fontWeight: "var(--fw-medium)",
-                          fontSize: ".6rem",
-                          marginTop: ".2rem",
-                        }}
-                      >
-                        +{g.wa}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {guestQuery && guestResults.length === 0 && !selectedGuest && (
-              <div
-                style={{
-                  marginTop: ".8rem",
-                  color: "var(--red)",
-                  fontFamily: "var(--f)",
-                  fontWeight: "var(--fw-medium)",
-                  fontSize: "var(--fs-h3)",
-                  textAlign: "center",
-                }}
-              >
-                Nama tidak ditemukan
-              </div>
-            )}
-          </div>
+          <KirimModeNama
+            guestQuery={guestQuery}
+            setGuestQuery={setGuestQuery}
+            searchGuest={searchGuest}
+            guestResults={guestResults}
+            setGuestResults={setGuestResults}
+            selectGuest={selectGuest}
+            selectedGuest={selectedGuest}
+            setSelectedGuest={setSelectedGuest}
+            setWaStatus={setWaStatus}
+          />
         )}
 
-        {/* ── MODE: Nomor WA langsung ── */}
         {guestMode === "wa" && (
-          <div style={{ marginBottom: "1rem" }}>
-            <div style={{ position: "relative" }}>
-              <input
-                type="tel"
-                value={waNumber}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9]/g, "");
-                  setWaNumber(val);
-                  setWaStatus("idle");
-                }}
-                placeholder="Ketik nomor WhatsApp tamu..."
-                style={{
-                  paddingLeft: "2.8rem",
-                  flex: 1,
-                  cursor: "text",
-                  border: ".1rem solid var(--secondary)",
-                  background: "rgba(65,139,250,.04)",
-                  fontFamily: "var(--f)",
-                  fontWeight: "var(--fw-medium)",
-                  fontSize: "1rem",
-                  color: "var(--primary)",
-                }}
-              />
-
-              <img
-                src="/assets/brand-whatsapp.svg"
-                alt="nama"
-                className="ic-blue"
-                style={{
-                  position: "absolute",
-                  left: "1rem",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: "1.5rem",
-                  height: "1.5rem",
-                  pointerEvents: "none",
-                }}
-              />
-
-              {waNumber && (
-                <button
-                  onClick={() => {
-                    setWaNumber("");
-                    setWaStatus("idle");
-                  }}
-                  className="del-btn"
-                  {...del2Handlers}
-                  style={{
-                    flexShrink: 0,
-                    position: "absolute",
-                    right: ".7rem",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                  }}
-                >
-                  <img
-                    ref={delImg2Ref}
-                    src="/assets/x.svg"
-                    alt="rmv"
-                    className="rmv-img"
-                    style={{
-                      width: "1.5rem",
-                      height: "1.5rem",
-                    }}
-                  />
-                </button>
-              )}
-            </div>
-
-            {waNumber.length > 0 && waNumber.length < 9 && (
-              <div
-                style={{
-                  marginTop: ".8rem",
-                  marginLeft: ".8rem",
-                  color: "var(--red)",
-                  fontFamily: "var(--f)",
-                  fontWeight: "var(--fw-medium)",
-                  fontSize: "var(--fs-h3)",
-                }}
-              >
-                Nomor terlalu pendek
-              </div>
-            )}
-          </div>
+          <KirimModeWA
+            waNumber={waNumber}
+            setWaNumber={setWaNumber}
+            setWaStatus={setWaStatus}
+          />
         )}
 
-        {/* ── MODE: QR ── */}
-        {/* ── area tengah zona ── */}
         {guestMode === "qr" && (
-          <div style={{ marginBottom: "1rem" }}>
-            {!selectedGuest ? (
-              <button
-                className="qr-btn"
-                onClick={() => setQrModalOpen(true)}
-                style={{
-                  fontFamily: "var(--f)",
-                }}
-              >
-                <img
-                  src="/assets/qrcode.svg"
-                  alt="qr"
-                  className="qr-img"
-                  style={{
-                    width: "3rem",
-                    height: "3rem",
-                  }}
-                />
-                <div
-                  className="qr-text"
-                  style={{
-                    fontFamily: "var(--f)",
-                    fontWeight: "var(--fw-semiBold)",
-                    fontSize: "var(--fs-h2)",
-                    letterSpacing: ".1rem",
-                  }}
-                >
-                  Klik untuk buka kamera laptop
-                </div>
-              </button>
-            ) : null}
-          </div>
+          <KirimModeQR
+            selectedGuest={selectedGuest}
+            setQrModalOpen={setQrModalOpen}
+          />
         )}
 
         {/* cardnya muncul (nama/ID and QR mode) */}
@@ -550,7 +271,7 @@ export default function SectKirim({
           </div>
         )}
 
-        {/* Send button */}
+        {/* TOMBOL KIRIM */}
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <button
             className="send-btn"
@@ -573,165 +294,24 @@ export default function SectKirim({
             />
             <span>
               {waStatus === "sending"
-                ? "MENGIRIM..."
+                ? "MEMBUKA..."
                 : waStatus === "done"
-                  ? "TERKIRIM"
-                  : "KIRIM"}
+                  ? "TERBUKA"
+                  : waStatus === "error"
+                    ? "GAGAL"
+                    : "KIRIM"}
             </span>
           </button>
         </div>
       </Section>
 
-      {/* ── QR Modal ── */}
-      {qrModalOpen && (
-        <div
-          onClick={() => {
-            setQrModalOpen(false);
-          }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 500,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(0, 0, 0, .85)",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "var(--bg)",
-              border: ".3rem solid var(--secondary)",
-              borderRadius: "3rem",
-              padding: "4rem",
-              width: "35rem",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: "1rem",
-              }}
-            >
-              <div
-                style={{
-                  color: "var(--secondary)",
-                  fontFamily: "var(--f)",
-                  fontWeight: "var(--fw-semiBold)",
-                  fontSize: "var(--fs-h2)",
-                }}
-              >
-                Arahkan QR ke kamera laptop!
-              </div>
-            </div>
-
-            {/* Webcam viewfinder */}
-            <div
-              style={{
-                width: "100%",
-                aspectRatio: "4/3",
-                borderRadius: "1rem",
-                overflow: "hidden",
-                background: "var(--primary)",
-                position: "relative",
-                marginBottom: "1rem",
-              }}
-            >
-              <video
-                ref={qrVideoRef}
-                autoPlay
-                playsInline
-                muted
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              {/* Scan frame pojokan */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <div
-                  style={{
-                    width: "15rem",
-                    height: "15rem",
-                    position: "relative",
-                  }}
-                >
-                  {[
-                    ["top", "left"],
-                    ["top", "right"],
-                    ["bottom", "left"],
-                    ["bottom", "right"],
-                  ].map(([y, x], i) => (
-                    <div
-                      key={i}
-                      style={{
-                        position: "absolute",
-                        [y]: "0",
-                        [x]: "0",
-                        width: "28px",
-                        height: "28px",
-                        [`border${y[0].toUpperCase() + y.slice(1)}`]:
-                          "2.5px solid var(--secondary)",
-                        [`border${x[0].toUpperCase() + x.slice(1)}`]:
-                          "2.5px solid var(--secondary)",
-                        opacity: 0.8,
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* tombol pindai */}
-            {!qrScanning ? (
-              <div style={{ display: "flex", justifyContent: "center" }}>
-                <button
-                  className={"qrwc-btn"}
-                  onClick={simulateQrScan}
-                  {...qrwcHandlers}
-                  style={{
-                    borderRadius: "3rem",
-                    padding: "1rem 2rem",
-                  }}
-                >
-                  <img
-                    ref={qrwcImgRef}
-                    src="/assets/scan.svg"
-                    alt="scqr"
-                    style={{
-                      width: "28px",
-                      height: "28px",
-                      objectFit: "contain",
-                    }}
-                  />
-                  <span>PINDAI</span>
-                </button>
-              </div>
-            ) : (
-              <div
-                style={{
-                  color: "var(--secondary)",
-                  fontFamily: "var(--f)",
-                  fontSize: "var(--fs-h2)",
-                  fontWeight: "var(--fw-bold)",
-                  letterSpacing: ".1rem",
-                }}
-              >
-                MEMINDAI QR...
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <QRModal
+        qrModalOpen={qrModalOpen}
+        setQrModalOpen={setQrModalOpen}
+        selectedCamera={selectedCamera}
+        simulateQrScan={simulateQrScan}
+        qrScanning={qrScanning}
+      />
     </>
   );
 }

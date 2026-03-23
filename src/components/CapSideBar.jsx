@@ -58,7 +58,7 @@ function SlotThumb({ idx, photos, active, busy, setActive, retake, aspect }) {
           </div>
         )}
 
-        {/* Bagian untuk Retake Foto */}
+        {/* BAGIAN RETAKE FOTO */}
         {hasPic && !busy && (
           <div
             onClick={(e) => {
@@ -120,7 +120,7 @@ export default function SideBar({
     : "1.543";
 
   const renderStripLayout = () => {
-    // Layout dengan slot custom (4 grid)
+    //* ------- LAYOUT FOTO KHUSUS 4 GRID -------  *//
     if (layout.print.slots) {
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -140,6 +140,7 @@ export default function SideBar({
       );
     }
 
+    //* ------- LAYOUT FOTO BIASA -------  *//
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         {Array.from({ length: total }).map((_, i) => (

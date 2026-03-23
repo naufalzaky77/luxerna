@@ -21,7 +21,7 @@ export default function SessionHeader({ adminUnlocked }) {
         PENGATURAN SESI
       </div>
 
-      {/* Bagian Tombol Status */}
+      {/* BAGIAN TOMBOL STATUS SETTING */}
       <div
         style={{
           display: "flex",

@@ -31,7 +31,7 @@ export default function TimeDate({
 
   return (
     <>
-      {/* Bagian Jam */}
+      {/* BAGIAN JAM */}
       <div
         style={{
           fontFamily: "var(--f)",
@@ -46,7 +46,7 @@ export default function TimeDate({
         {timeStr}
       </div>
 
-      {/* Bagian Tanggal */}
+      {/* BAGIAN TANGGAL */}
       {showDate && (
         <div
           style={{

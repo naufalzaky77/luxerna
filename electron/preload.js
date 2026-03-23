@@ -16,8 +16,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("file:savePhoto", args),
     // args: { folderPath, eventName, fileName, data (base64) }
 
-  openFolder: (folderPath) =>
-    ipcRenderer.invoke("file:openFolder", folderPath),
+  openFolder: (folderPath, eventName) =>
+    ipcRenderer.invoke("file:openFolder", folderPath, eventName),
+
+  getLastPhotoIndex: (args) =>
+  ipcRenderer.invoke("file:getLastPhotoIndex", args),
 
   // ── Kamera DSLR ──────────────────────────────────────────────────────────
   listDSLR: () =>
@@ -38,5 +41,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("printer:print", args),
     // args: { printerName, filePath, copies? }
     // returns: { success, error? }
+
+    // ── WhatsApp ──────────────────────────────────────────────────────────────
+  waOpenChat: (args) =>
+  ipcRenderer.invoke("wa:openChat", args),
+  // args: { waNumber, eventName }
+
+
+  // ── Load CSV ──────────────────────────────────────
+  readCSV: (filePath) =>
+  ipcRenderer.invoke("file:readCSV", filePath),
+
+  selectFile: (args) =>
+  ipcRenderer.invoke("dialog:selectFile", args),
 
 });

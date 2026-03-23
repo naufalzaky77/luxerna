@@ -1,5 +1,4 @@
 export default function LayoutPreview({ layout, templatePreview }) {
-  const isLand = layout.orientation === "landscape";
   const gap = 3;
   const PREVIEW_MAX = 220;
   const { w, h } = layout.print.paper;
@@ -10,7 +9,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
   const renderCells = () => {
     const { print, shots } = layout;
 
-    // Layout dengan slots custom (4grid)
+    // ------- LAYOUT SLOT 4 GRID ------- //
     if (print.slots) {
       const { slots, paper } = print;
       const scaleX = W / paper.w;
@@ -48,7 +47,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
       );
     }
 
-    // Layout grid/strip reguler (cols x rows)
+    // ------- LAYOUT GRID/STRIP (COL X ROW) ------- //
     const { cols, rows, photo } = print;
     const cellW = (W - gap * (cols + 1)) / cols;
     const cellH = cellW * (photo.h / photo.w);
@@ -111,7 +110,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
         flexShrink: 0,
       }}
     >
-      {/* Layer 1 — frame template (di belakang foto) */}
+      {/* LAYER 0 - Frame Template (di paling belakang) */}
       {templatePreview && (
         <img
           src={templatePreview}
@@ -129,7 +128,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
         />
       )}
 
-      {/* Layer 1 — kertas putih */}
+      {/* LAYER 1 - Kertas Putih (di depan frame) */}
       <div
         style={{
           position: "absolute",
@@ -140,7 +139,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
           overflow: "hidden",
         }}
       >
-        {/* Layer 2 — area foto (paling depan) */}
+        {/* LAYER 2 - Hitam Area Foto (paling depan) */}
         <div style={{ position: "relative", zIndex: 2 }}>{renderCells()}</div>
       </div>
     </div>

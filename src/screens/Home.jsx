@@ -9,6 +9,7 @@ import LayoutSelect from "../components/HoLayoutSelect";
 import CameraSelect from "../components/HoCameraSelect";
 import FrameUpload from "../components/HoFrameUpload";
 import PreviewSet from "../components/HoPreviewSet";
+import GuestDB from "../components/HoGuestDB";
 
 export default function Home({
   settings,
@@ -125,6 +126,14 @@ export default function Home({
           <FrameUpload
             templateFile={templateFile}
             templatePreview={templatePreview}
+            locked={locked}
+            settings={settings}
+            onSettingsChange={onSettingsChange}
+          />
+        </div>
+
+        <div style={disabledOverlay}>
+          <GuestDB
             locked={locked}
             settings={settings}
             onSettingsChange={onSettingsChange}

@@ -13,7 +13,7 @@ export default function HeadBar({ onBack, settings, layout }) {
         justifyContent: "space-between",
       }}
     >
-      {/* Bagian Tombol Kembali */}
+      {/* BAGIAN TOMBOL BACK (POJOK KIRI ATAS) */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <button
           className="back-btn"
@@ -35,7 +35,7 @@ export default function HeadBar({ onBack, settings, layout }) {
           KEMBALI
         </button>
 
-        {/* Bagian Logo Vendor */}
+        {/* BAGIAN LOGO LUXERNA */}
         <img
           src="/assets/Luxerna_Full.webp"
           alt="logo"
@@ -46,7 +46,7 @@ export default function HeadBar({ onBack, settings, layout }) {
         />
       </div>
 
-      {/* KOLOM TENGAH */}
+      {/* ------- KOLOM TENGAH ------- */}
       <div
         style={{
           display: "flex",
@@ -54,7 +54,7 @@ export default function HeadBar({ onBack, settings, layout }) {
           alignItems: "center",
         }}
       >
-        {/* Bagian Jam */}
+        {/* BAGIAN JAM */}
         <TimeDate
           showDate={false}
           timeSize="var(--fs-h2)"
@@ -63,7 +63,7 @@ export default function HeadBar({ onBack, settings, layout }) {
           timeColor="var(--secondary)"
           timeSpacing={3}
         />
-        {/* Bagian Nama Acara */}
+        {/* BAGIAN NAMA SESI ACARA */}
         <div
           style={{
             fontFamily: "var(--f)",
@@ -78,7 +78,7 @@ export default function HeadBar({ onBack, settings, layout }) {
         </div>
       </div>
 
-      {/* KOLOM KANAN */}
+      {/* ------- KOLOM KANAN ------- */}
       <div
         style={{
           display: "flex",
@@ -87,7 +87,7 @@ export default function HeadBar({ onBack, settings, layout }) {
           alignItems: "flex-end",
         }}
       >
-        {/* Bagian Info Jenis Foto */}
+        {/* BAGIAN JENIS FOTO */}
         <div
           style={{
             fontFamily: "var(--f)",

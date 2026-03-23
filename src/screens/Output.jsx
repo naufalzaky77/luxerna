@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { G } from "../styles/global.css";
 import { buildCssVars } from "../luxernaTheme";
-import { GUEST_DB } from "../data/mockData";
 import HeadBar from "../components/OtHeadBar";
 import CompositePreview from "../components/OtCompositePreview";
 import StatusBadge from "../components/OtStatusBadge";
@@ -26,12 +25,14 @@ export default function Output({
   printerLocked,
   setSelectedPrinterLocked,
   onBack,
+  guestDB,
+  photoIndex,
 }) {
   const { layout, templatePreview } = settings;
+  const [lastSavedPath, setLastSavedPath] = useState(null);
 
   // ── STATE PROSES ──
   const { eventName } = settings;
-  const photoIndex = useRef(1); // auto-increment filename counter
   const [processStatus, setProcessStatus] = useState("idle"); // idle | running | done
   const [processSteps, setProcessSteps] = useState([
     { id: "render", label: "Render foto + frame template" },
@@ -58,6 +59,20 @@ export default function Output({
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrScanning, setQrScanning] = useState(false);
 
+  useEffect(() => {
+    if (!pathLocked || !localPath || !eventName) return;
+    const checkLastIndex = async () => {
+      const result = await window.electronAPI.getLastPhotoIndex({
+        folderPath: localPath,
+        eventName,
+      });
+      if (result.lastIndex) {
+        photoIndex.current = result.lastIndex + 1;
+      }
+    };
+    checkLastIndex();
+  }, [pathLocked]);
+
   // ── Run PROSES ──
   const runProcess = async () => {
     if (processStatus !== "idle") return;
@@ -82,7 +97,7 @@ export default function Output({
       setProcessSteps((prev) =>
         prev.map((s, i) => (i === 1 ? { ...s, running: true } : s)),
       );
-      const fileName = `foto_${String(photoIndex.current).padStart(3, "0")}.png`;
+      const fileName = `IMG_${String(photoIndex.current).padStart(3, "0")}.png`;
       const data = base64.replace(/^data:image\/png;base64,/, "");
       const result = await window.electronAPI.savePhoto({
         folderPath: localPath,
@@ -91,6 +106,7 @@ export default function Output({
         data,
       });
       if (!result.success) throw new Error(result.error);
+      setLastSavedPath(result.filePath);
       photoIndex.current += 1;
       setProcessSteps((prev) =>
         prev.map((s, i) =>
@@ -138,7 +154,7 @@ export default function Output({
       setGuestResults([]);
       return;
     }
-    const r = GUEST_DB.filter(
+    const r = guestDB.filter(
       (g) =>
         g.name.toLowerCase().includes(q.toLowerCase()) ||
         g.id.toLowerCase().includes(q.toLowerCase()),
@@ -152,16 +168,40 @@ export default function Output({
     setGuestResults([]);
   };
 
-  const sendWa = () => {
-    const target = guestMode === "wa" ? waNumber : selectedGuest?.wa;
-    if (!target || !processDone || waStatus !== "idle") return;
+  const sendWa = async () => {
+    const raw = guestMode === "wa" ? waNumber : selectedGuest?.wa;
+    if (!raw || waStatus !== "idle") return;
+    if (guestMode !== "wa" && !processDone) return;
+
+    // ✅ Normalisasi nomor WA
+    let target = raw.replace(/\D/g, ""); // hapus semua selain angka
+    if (target.startsWith("0")) {
+      target = "62" + target.slice(1); // 08xxx → 628xxx
+    }
+    if (!target.startsWith("62")) {
+      target = "62" + target; // tambah kode negara kalau belum ada
+    }
+
     setWaStatus("sending");
-    setTimeout(() => setWaStatus("done"), 1800);
+    try {
+      if (localPath && eventName) {
+        await window.electronAPI.openFolder(localPath, eventName);
+      }
+      await window.electronAPI.waOpenChat({
+        waNumber: target,
+        eventName: settings.eventName,
+      });
+      setWaStatus("done");
+    } catch (err) {
+      console.error("sendWa error:", err);
+      setWaStatus("error");
+    }
   };
 
   const canSendWa = () => {
-    if (!processDone || waStatus !== "idle") return false;
+    if (waStatus !== "idle") return false;
     if (guestMode === "wa") return waNumber.length >= 9;
+    if (!processDone) return false;
     return !!selectedGuest;
   };
 
@@ -169,9 +209,11 @@ export default function Output({
   const simulateQrScan = () => {
     setQrScanning(true);
     setTimeout(() => {
-      const found = GUEST_DB[Math.floor(Math.random() * GUEST_DB.length)];
-      setSelectedGuest(found);
-      setGuestQuery(found.name);
+      if (guestDB.length > 0) {
+        const found = guestDB[Math.floor(Math.random() * guestDB.length)];
+        setSelectedGuest(found);
+        setGuestQuery(found.name);
+      }
       setQrScanning(false);
       setQrModalOpen(false);
     }, 2200);
@@ -339,6 +381,7 @@ export default function Output({
             simulateQrScan={simulateQrScan}
             qrScanning={qrScanning}
             selectedCamera={settings.selectedCamera}
+            guestDB={guestDB}
           />
         </div>
       </div>
