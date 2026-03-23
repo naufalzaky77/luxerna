@@ -1,8 +1,4 @@
 // electron/preload.js
-// ─── Preload Script ───────────────────────────────────────────────────────────
-// Jembatan aman antara main process (Node.js) dan renderer (React)
-// contextIsolation: true  → React tidak bisa akses Node langsung
-// Semua akses hardware harus lewat window.electronAPI ini
 
 const { contextBridge, ipcRenderer } = require("electron");
 
@@ -20,17 +16,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("file:openFolder", folderPath, eventName),
 
   getLastPhotoIndex: (args) =>
-  ipcRenderer.invoke("file:getLastPhotoIndex", args),
-
-  // ── Kamera DSLR ──────────────────────────────────────────────────────────
-  listDSLR: () =>
-    ipcRenderer.invoke("camera:listDSLR"),
-    // returns: { cameras: [{ model, port }] }
-
-  capturePhoto: (args) =>
-    ipcRenderer.invoke("camera:capturePhoto", args),
-    // args: { savePath? }
-    // returns: { success, filePath, base64 }
+    ipcRenderer.invoke("file:getLastPhotoIndex", args),
 
   // ── Printer ──────────────────────────────────────────────────────────────
   listPrinters: () =>
@@ -42,17 +28,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
     // args: { printerName, filePath, copies? }
     // returns: { success, error? }
 
-    // ── WhatsApp ──────────────────────────────────────────────────────────────
+  // ── WhatsApp ─────────────────────────────────────────────────────────────
   waOpenChat: (args) =>
-  ipcRenderer.invoke("wa:openChat", args),
-  // args: { waNumber, eventName }
+    ipcRenderer.invoke("wa:openChat", args),
+    // args: { waNumber, eventName }
 
-
-  // ── Load CSV ──────────────────────────────────────
+  // ── CSV ──────────────────────────────────────────────────────────────────
   readCSV: (filePath) =>
-  ipcRenderer.invoke("file:readCSV", filePath),
+    ipcRenderer.invoke("file:readCSV", filePath),
 
   selectFile: (args) =>
-  ipcRenderer.invoke("dialog:selectFile", args),
+    ipcRenderer.invoke("dialog:selectFile", args),
 
 });

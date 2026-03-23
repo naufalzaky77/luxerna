@@ -63,6 +63,13 @@
     ],
     "directories": {
       "buildResources": "public"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "vendor/digiCamControl",
+        "to": "digiCamControl",
+        "filter": ["**/*"]
+      }
+    ]
   }
 }
