@@ -5,6 +5,9 @@ const { spawn } = require("child_process");
 const path = require("path");
 const fs   = require("fs");
 const http = require("http");
+const os   = require("os");
+
+const platform = os.platform(); // "win32" | "darwin"
 
 const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 
@@ -146,15 +149,17 @@ function createWindow() {
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
-  await launchDCC();
+  if (platform === "win32") await launchDCC();
   createWindow();
 });
 
-app.on("before-quit", () => killDCC());
+app.on("before-quit", () => {
+  if (platform === "win32") killDCC();
+});
 
 app.on("window-all-closed", () => {
-  killDCC();
-  if (process.platform !== "darwin") app.quit();
+  if (platform === "win32") killDCC();
+  if (platform !== "darwin") app.quit();
 });
 
 app.on("activate", () => {
@@ -184,8 +189,11 @@ ipcMain.handle("file:savePhoto", async (_, { folderPath, eventName, fileName, da
   }
 });
 
-ipcMain.handle("file:openFolder", async (_, folderPath) => {
-  shell.openPath(folderPath);
+ipcMain.handle("file:openFolder", async (_, folderPath, eventName) => {
+  const fullPath = eventName
+    ? path.join(folderPath, sanitizeFolderName(eventName))
+    : folderPath;
+  shell.openPath(fullPath);
 });
 
 ipcMain.handle("file:getLastPhotoIndex", async (_, { folderPath, eventName }) => {
@@ -226,6 +234,157 @@ ipcMain.handle("dialog:selectFile", async (_, { filters }) => {
     filters: filters || [],
   });
   return result.canceled ? null : result.filePaths[0];
+});
+
+// ─── Kamera universal (Windows: DCC | macOS: gphoto2) ─────────────────────────
+
+let liveViewCancelled = false; // ✅ di atas semua handler kamera
+
+ipcMain.handle("camera:listDSLR", async () => {
+  if (platform === "win32") {
+    try {
+      const res  = await fetch("http://localhost:5513/api/list");
+      const data = await res.json();
+      const list = data?.Data ?? data?.data ?? [];
+      return {
+        cameras: list.map((cam, i) => ({
+          deviceId: `dslr_${i}`,
+          label: cam.DisplayName || cam.DeviceName || `DSLR ${i + 1}`,
+          model: cam.DeviceName || "",
+          type: "dslr",
+        }))
+      };
+    } catch {
+      return { cameras: [] };
+    }
+  }
+
+  if (platform === "darwin") {
+    return new Promise((resolve) => {
+      const proc = spawn("gphoto2", ["--auto-detect"]);
+      let output = "";
+      proc.stdout.on("data", (d) => output += d.toString());
+      proc.on("close", () => {
+        const lines = output.split("\n").slice(2).filter(Boolean);
+        const cameras = lines.map((line, i) => {
+          const parts = line.trim().split(/\s{2,}/);
+          return {
+            deviceId: `dslr_${i}`,
+            label: parts[0] || `DSLR ${i + 1}`,
+            model: parts[0] || "",
+            port: parts[1] || "",
+            type: "dslr",
+          };
+        });
+        resolve({ cameras });
+      });
+      proc.on("error", () => resolve({ cameras: [] }));
+    });
+  }
+
+  return { cameras: [] };
+});
+
+ipcMain.handle("camera:liveViewStart", async () => {
+  if (platform === "win32") {
+    try {
+      await fetch("http://localhost:5513/?cmd=LiveViewWnd_Show");
+      return { success: true, mode: "http-poll" };
+    } catch {
+      return { success: false };
+    }
+  }
+
+  if (platform === "darwin") {
+    liveViewCancelled = false;
+    const tmpPath = path.join(app.getPath("temp"), "liveview_mac.jpg");
+
+    const pollFrame = () => {
+      if (liveViewCancelled) return;
+      const proc = spawn("gphoto2", [
+        "--capture-preview",
+        "--filename", tmpPath,
+        "--force-overwrite"
+      ]);
+      proc.on("close", (code) => {
+        if (liveViewCancelled) return;
+        if (code === 0 && fs.existsSync(tmpPath)) {
+          try {
+            const base64 = fs.readFileSync(tmpPath).toString("base64");
+            if (mainWindow) {
+              mainWindow.webContents.send(
+                "tether:frame",
+                `data:image/jpeg;base64,${base64}`
+              );
+            }
+          } catch {}
+        }
+        setTimeout(pollFrame, 150);
+      });
+      proc.on("error", () => {
+        if (!liveViewCancelled) setTimeout(pollFrame, 500);
+      });
+    };
+
+    pollFrame();
+    return { success: true, mode: "ipc-stream" };
+  }
+
+  return { success: false };
+});
+
+ipcMain.handle("camera:liveViewStop", async () => {
+  liveViewCancelled = true;
+  return { success: true };
+});
+
+ipcMain.handle("camera:capture", async () => {
+  if (platform === "win32") {
+    try {
+      await fetch("http://localhost:5513/api/capture");
+      await new Promise(r => setTimeout(r, 1500));
+      const lastRes  = await fetch("http://localhost:5513/api/lastcaptured");
+      const lastData = await lastRes.json();
+      const filePath = lastData?.Data || lastData?.data;
+      if (!filePath) return { success: false, error: "Path file tidak ditemukan" };
+      const fileRes = await fetch(
+        `http://localhost:5513/image?file=${encodeURIComponent(filePath)}`
+      );
+      const buffer = Buffer.from(await fileRes.arrayBuffer());
+      return {
+        success: true,
+        base64: `data:image/jpeg;base64,${buffer.toString("base64")}`
+      };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  if (platform === "darwin") {
+    return new Promise((resolve) => {
+      const tmpPath = path.join(app.getPath("temp"), `capture_${Date.now()}.jpg`);
+      const proc = spawn("gphoto2", [
+        "--capture-image-and-download",
+        "--filename", tmpPath,
+        "--force-overwrite"
+      ]);
+      proc.on("close", (code) => {
+        if (code !== 0 || !fs.existsSync(tmpPath)) {
+          resolve({ success: false, error: "gphoto2 capture gagal" });
+          return;
+        }
+        const base64 = `data:image/jpeg;base64,${fs.readFileSync(tmpPath).toString("base64")}`;
+        fs.unlinkSync(tmpPath);
+        resolve({ success: true, base64 });
+      });
+      proc.on("error", () => resolve({
+        success: false,
+        error: "gphoto2 tidak terinstall. Install via: brew install gphoto2"
+      }));
+    });
+  }
+
+  return { success: false, error: "Platform tidak didukung" };
 });
 
 // ─── Printer ──────────────────────────────────────────────────────────────────

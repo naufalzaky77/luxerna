@@ -6,10 +6,8 @@ const DCC_BASE = "http://localhost:5513";
 
 async function checkDCC() {
   try {
-    const res = await fetch(`${DCC_BASE}/api/list`, {
-      signal: AbortSignal.timeout(1500),
-    });
-    return res.ok;
+    const result = await window.electronAPI.listDSLR();
+    return Array.isArray(result.cameras);
   } catch {
     return false;
   }
@@ -17,19 +15,8 @@ async function checkDCC() {
 
 async function fetchDSLRCameras() {
   try {
-    const res = await fetch(`${DCC_BASE}/api/list`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    const list = data?.Data ?? data?.data ?? [];
-    return list.map((cam, i) => ({
-      deviceId: `dslr_${i}`,
-      label: cam.DisplayName || cam.DeviceName || `DSLR ${i + 1}`,
-      model: cam.DeviceName || "",
-      kind: "videoinput",
-      type: "dslr",
-    }));
+    const result = await window.electronAPI.listDSLR();
+    return result.cameras ?? [];
   } catch {
     return [];
   }

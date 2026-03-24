@@ -18,6 +18,25 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getLastPhotoIndex: (args) =>
     ipcRenderer.invoke("file:getLastPhotoIndex", args),
 
+  // ── Kamera ──────────────────────────────────────────────────────────
+  listDSLR: () =>
+    ipcRenderer.invoke("camera:listDSLR"),
+
+  startLiveView: () =>
+    ipcRenderer.invoke("camera:liveViewStart"),
+
+  captureDSLR: () =>
+    ipcRenderer.invoke("camera:capture"),
+
+  stopLiveView: () =>
+    ipcRenderer.invoke("camera:liveViewStop"),
+
+  onTetherFrame: (callback) =>
+    ipcRenderer.on("tether:frame", (_, frame) => callback(frame)),
+
+  offTetherFrame: () =>
+    ipcRenderer.removeAllListeners("tether:frame"),
+
   // ── Printer ──────────────────────────────────────────────────────────────
   listPrinters: () =>
     ipcRenderer.invoke("printer:list"),

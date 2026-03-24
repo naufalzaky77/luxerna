@@ -6,8 +6,6 @@ import ViewFinder from "../components/CapViewFinder";
 import SnapButton from "../components/CapSnapButton";
 import SideBar from "../components/CapSideBar";
 
-const DCC_BASE = "http://localhost:5513";
-
 export default function Capture({ settings, onDone, onBack }) {
   const { layout } = settings;
   const total = layout.shots;
@@ -16,7 +14,7 @@ export default function Capture({ settings, onDone, onBack }) {
   const [active, setActive] = useState(0);
   const [cd, setCd] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [snapError, setSnapError] = useState(null); // error per-capture
+  const [snapError, setSnapError] = useState(null);
 
   const videoRef = useRef(null); // untuk webcam
   const canvasRef = useRef(null); // untuk webcam snapshot
@@ -25,7 +23,7 @@ export default function Capture({ settings, onDone, onBack }) {
   const allDone = photos.every(Boolean);
   const isDSLR = settings.selectedCamera?.type === "dslr";
 
-  // ── Countdown helper ───────────────────────────────────────────────────────
+  // ── COUNTDOWN HELPER ───────────────────────────────────────────────────────
   const runCountdown = async () => {
     setCd("SIAP");
     await wait(1000);
@@ -34,10 +32,10 @@ export default function Capture({ settings, onDone, onBack }) {
       await wait(1000);
     }
     setCd(null);
-    await wait(380); // jeda sebelum capture
+    await wait(380);
   };
 
-  // ── Capture webcam ─────────────────────────────────────────────────────────
+  // ── CAPTURE WEBCAM ─────────────────────────────────────────────────────────
   const captureWebcam = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -49,41 +47,14 @@ export default function Capture({ settings, onDone, onBack }) {
     return canvas.toDataURL("image/jpeg");
   };
 
-  // ── Capture DSLR via digiCamControl ───────────────────────────────────────
+  // ── CAPTURE DSLR via IPC (Windows: DCC | macOS: gphoto2) ──────────────────
   const captureDSLR = async () => {
-    // 1. Trigger shutter
-    const triggerRes = await fetch(`${DCC_BASE}/api/capture`, {
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!triggerRes.ok) throw new Error("Trigger shutter gagal");
-
-    // 2. Tunggu sebentar — kamera butuh waktu proses
-    await wait(1500);
-
-    // 3. Ambil path file terakhir yang di-capture
-    const lastRes = await fetch(`${DCC_BASE}/api/lastcaptured`, {
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!lastRes.ok) throw new Error("Gagal ambil info file terakhir");
-
-    const lastData = await lastRes.json();
-    const filePath = lastData?.Data || lastData?.data || null;
-
-    if (!filePath) throw new Error("Path file tidak ditemukan");
-
-    // 4. Download file sebagai base64
-    const fileUrl = `${DCC_BASE}/image?file=${encodeURIComponent(filePath)}`;
-    const fileRes = await fetch(fileUrl, {
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!fileRes.ok) throw new Error("Gagal download file dari DCC");
-
-    const blob = await fileRes.blob();
-    const base64 = await blobToBase64(blob);
-    return base64;
+    const result = await window.electronAPI.captureDSLR();
+    if (!result.success) throw new Error(result.error || "Memotret gagal");
+    return result.base64;
   };
 
-  // ── Fungsi shoot utama ─────────────────────────────────────────────────────
+  // ── FUNGSI UTAMA SHOOT ─────────────────────────────────────────────────────
   const shoot = async (slot) => {
     if (busy) return;
 
@@ -129,7 +100,7 @@ export default function Capture({ settings, onDone, onBack }) {
     setSnapError(null);
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -156,7 +127,7 @@ export default function Capture({ settings, onDone, onBack }) {
       />
 
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-        {/* Area utama — viewfinder + tombol */}
+        {/* VIEWFINDER + TOMBOL */}
         <div
           style={{
             flex: 1,
@@ -173,16 +144,17 @@ export default function Capture({ settings, onDone, onBack }) {
             cd={cd}
             selectedCamera={settings.selectedCamera}
             videoRef={videoRef}
-            imgRef={imgRef} // ← tambahan untuk DSLR
+            imgRef={imgRef}
           />
 
-          {/* Error capture */}
+          {/* EROR CAPTURE */}
           {snapError && (
             <div
               style={{
-                color: "#dc2626",
+                color: "var(--red)",
                 fontFamily: "var(--f)",
-                fontSize: ".85rem",
+                fontSize: "var(--fs-h2)",
+                fontWeight: "var(--fw-semiBold)",
                 textAlign: "center",
                 maxWidth: "480px",
                 lineHeight: 1.5,
@@ -217,7 +189,7 @@ export default function Capture({ settings, onDone, onBack }) {
   );
 }
 
-// ── Utilities ──────────────────────────────────────────────────────────────────
+// ── UTILITAS ──────────────────────────────────────────────────────────────────
 
 function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));

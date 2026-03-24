@@ -11,9 +11,9 @@ const LV_INTERVAL = 150; // ms antar frame, ~6fps — cukup untuk preview
 export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
   const [camError, setCamError] = useState(null);
   const [dslrReady, setDslrReady] = useState(false);
-  const pollRef = useRef(null); // interval ID polling
+  const pollRef = useRef(null);
 
-  // ── Cleanup helper ──────────────────────────────────────────────────────────
+  // ── CLEANUP HELPER ──────────────────────────────────────────────────────────
   const stopDSLRLiveView = async () => {
     if (pollRef.current) {
       clearInterval(pollRef.current);
@@ -22,9 +22,10 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
     setDslrReady(false);
     try {
       await fetch(LV_HIDE);
-    } catch {
-      /* DCC mungkin sudah tutup */
-    }
+    } catch {}
+    try {
+      await window.electronAPI.stopLiveView();
+    } catch {}
   };
 
   const stopWebcam = (stream) => {
@@ -32,7 +33,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
     if (videoRef.current) videoRef.current.srcObject = null;
   };
 
-  // ── Effect utama — jalankan saat selectedCamera berubah ───────────────────
+  // ── EFEK UTAMA — jalankan saat selectedCamera berubah ───────────────────
   useEffect(() => {
     if (!selectedCamera) return;
 
@@ -45,26 +46,30 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
 
       const startDSLRLiveView = async () => {
         try {
-          // 1. Aktifkan live view di digiCamControl
-          await fetch(LV_SHOW);
-          await new Promise((r) => setTimeout(r, 800)); // beri waktu DCC warmup
+          const result = await window.electronAPI.startLiveView();
+          if (!result.success) throw new Error("Live view gagal");
 
-          if (cancelled) return;
-          setDslrReady(true);
-
-          // 2. Polling frame — tiap LV_INTERVAL ms update src <img>
-          pollRef.current = setInterval(() => {
-            if (imgRef.current) {
-              // Cache-busting dengan timestamp agar browser tidak cache frame lama
-              imgRef.current.src = `${LV_URL}?t=${Date.now()}`;
-            }
-          }, LV_INTERVAL);
-        } catch (err) {
-          if (!cancelled) {
-            setCamError(
-              "Gagal terhubung ke live view DSLR. Pastikan digiCamControl berjalan.",
-            );
+          if (result.mode === "http-poll") {
+            // Windows — polling seperti sekarang
+            await new Promise((r) => setTimeout(r, 800));
+            setDslrReady(true);
+            pollRef.current = setInterval(() => {
+              if (imgRef.current) {
+                imgRef.current.src = `${LV_URL}?t=${Date.now()}`;
+              }
+            }, LV_INTERVAL);
           }
+
+          if (result.mode === "ipc-stream") {
+            window.electronAPI.onTetherFrame((frame) => {
+              if (imgRef.current) {
+                imgRef.current.src = frame;
+              }
+            });
+            setDslrReady(true);
+          }
+        } catch (err) {
+          setCamError("Gagal terhubung ke liveview DSLR.");
         }
       };
 
@@ -73,6 +78,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
       return () => {
         cancelled = true;
         stopDSLRLiveView();
+        window.electronAPI.offTetherFrame?.();
       };
     }
 
@@ -108,7 +114,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
     };
   }, [selectedCamera]);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -152,13 +158,11 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
             opacity: dslrReady ? 1 : 0,
             transition: "opacity .3s",
           }}
-          onError={() => {
-            // Frame gagal load — tidak perlu error state, polling akan retry otomatis
-          }}
+          onError={() => {}}
         />
       )}
 
-      {/* Placeholder — belum pilih kamera */}
+      {/* PLACEHOLDER — belum pilih kamera */}
       {!selectedCamera && (
         <div style={overlayStyle}>
           <img
@@ -175,15 +179,16 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
             style={{
               color: "rgba(255,255,255,.4)",
               fontFamily: "var(--f)",
-              fontSize: ".9rem",
+              fontSize: "var(--fs-h2)",
+              fontWeight: "var(--fw-medium)",
             }}
           >
-            Pilih kamera terlebih dahulu
+            Pilih kamera terlebih dahulu!
           </span>
         </div>
       )}
 
-      {/* Placeholder — DSLR loading */}
+      {/* PLACEHOLDER — DSLR loading */}
       {selectedCamera?.type === "dslr" && !dslrReady && !camError && (
         <div style={overlayStyle}>
           <img
@@ -201,7 +206,8 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
             style={{
               color: "rgba(255,255,255,.6)",
               fontFamily: "var(--f)",
-              fontSize: ".9rem",
+              fontSize: "var(--fs-h2)",
+              fontWeight: "var(--fw-medium)",
             }}
           >
             Menghubungkan ke {selectedCamera.label}...
@@ -209,14 +215,15 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
         </div>
       )}
 
-      {/* Error state */}
+      {/* ERROR STATE */}
       {camError && (
         <div style={overlayStyle}>
           <span
             style={{
-              color: "rgba(255,100,100,.9)",
+              color: "var(--red)",
               fontFamily: "var(--f)",
-              fontSize: ".9rem",
+              fontSize: "var(--fs-h2)",
+              fontWeight: "var(--fw-medium)",
               textAlign: "center",
               maxWidth: "80%",
               lineHeight: 1.6,
