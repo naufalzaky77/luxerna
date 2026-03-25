@@ -1,6 +1,8 @@
 {
   "name": "luxerna",
   "version": "0.1.0",
+  "description": "Luxerna Photobooth - Aplikasi Photobooth Profesional",
+  "author": "Luxerna Lensa Nusantara",
   "private": true,
   "main": "electron/main.js",
   "homepage": "./",
@@ -9,6 +11,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "google-auth-library": "^10.6.2",
+    "googleapis": "^171.4.0",
     "node-printer": "^1.0.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -54,13 +58,21 @@
   "build": {
     "appId": "com.luxerna.photobooth",
     "productName": "Luxerna Photobooth",
+    "icon": "favicon.ico",
+    "publish": {
+      "provider": "generic",
+      "url": "http://localhost"
+    },
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
     "mac": {
-    "target": "dmg",
-    "icon": "public/assets/icon.icns"
-  },
+      "target": "dmg",
+      "icon": "icon.icns"
+    },
     "win": {
-      "target": "nsis",
-      "icon": "public/assets/icon.ico"
+      "target": "portable",
+      "icon": "icon.ico"
     },
     "files": [
       "build/**/*",
@@ -69,13 +81,6 @@
     ],
     "directories": {
       "buildResources": "public"
-    },
-    "extraResources": [
-      {
-        "from": "vendor/digiCamControl",
-        "to": "digiCamControl",
-        "filter": ["**/*"]
-      }
-    ]
+    }
   }
 }

@@ -1,3 +1,5 @@
+import getAsset from "../utils/getAsset";
+
 export default function ProsesPath({
   localPath,
   setLocalPath,
@@ -25,7 +27,7 @@ export default function ProsesPath({
         <div style={{ display: "flex", gap: "8px" }}>
           <div style={{ position: "relative", flex: 1 }}>
             <img
-              src="/assets/folder-open.svg"
+              src={getAsset("/assets/folder-open.svg")}
               alt="folder"
               className={pathLocked ? "ic-grey" : "ic-blue"}
               style={{
@@ -78,7 +80,7 @@ export default function ProsesPath({
               }}
             >
               <img
-                src={"/assets/folder-search.svg"}
+                src={getAsset("/assets/folder-search.svg")}
                 alt="fs"
                 className="ic-blue"
                 style={{
@@ -110,7 +112,7 @@ export default function ProsesPath({
         </div>
         <div style={{ position: "relative" }}>
           <img
-            src="/assets/cloud-up.svg"
+            src={getAsset("/assets/cloud-up.svg")}
             alt="cloud"
             className={pathLocked ? "ic-grey" : "ic-blue"}
             style={{

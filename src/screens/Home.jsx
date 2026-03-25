@@ -10,6 +10,8 @@ import CameraSelect from "../components/HoCameraSelect";
 import FrameUpload from "../components/HoFrameUpload";
 import PreviewSet from "../components/HoPreviewSet";
 import GuestDB from "../components/HoGuestDB";
+import GoogleDriveSetup from "../components/HoGoogleDriveSetup";
+import getAsset from "../utils/getAsset";
 
 export default function Home({
   settings,
@@ -62,7 +64,7 @@ export default function Home({
         {/* Logo */}
         <div style={{ marginBottom: "3rem" }}>
           <img
-            src="/assets/Luxerna_Full.webp"
+            src={getAsset("/assets/Luxerna_Full.webp")}
             alt="logo"
             style={{
               width: "90%",
@@ -135,6 +137,13 @@ export default function Home({
         <div style={disabledOverlay}>
           <GuestDB
             locked={locked}
+            settings={settings}
+            onSettingsChange={onSettingsChange}
+          />
+        </div>
+
+        <div style={disabledOverlay}>
+          <GoogleDriveSetup
             settings={settings}
             onSettingsChange={onSettingsChange}
           />

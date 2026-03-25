@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function KirimModeWA({ waNumber, setWaNumber, setWaStatus }) {
   const delImg2Ref = useRef(null);
@@ -51,7 +52,7 @@ export default function KirimModeWA({ waNumber, setWaNumber, setWaStatus }) {
           }}
         />
         <img
-          src="/assets/brand-whatsapp.svg"
+          src={getAsset("/assets/brand-whatsapp.svg")}
           alt="nama"
           className="ic-blue"
           style={{
@@ -82,7 +83,7 @@ export default function KirimModeWA({ waNumber, setWaNumber, setWaStatus }) {
           >
             <img
               ref={delImg2Ref}
-              src="/assets/x.svg"
+              src={getAsset("/assets/x.svg")}
               alt="rmv"
               className="rmv-img"
               style={{ width: "1.5rem", height: "1.5rem" }}

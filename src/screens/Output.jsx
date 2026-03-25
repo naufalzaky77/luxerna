@@ -115,12 +115,58 @@ export default function Output({
       );
       setProcessProgress(66);
 
-      // ── Step 3: Upload cloud (skip kalau belum ada) ──
+      // ── Step 3: Upload cloud ──
       setProcessSteps((prev) =>
         prev.map((s, i) => (i === 2 ? { ...s, running: true } : s)),
       );
-      // TODO: implement Google Drive upload
-      await new Promise((r) => setTimeout(r, 500)); // placeholder
+
+      if (cloudFolder && cloudFolder.trim() !== "") {
+        try {
+          // Extract folder ID atau nama dari cloudFolder
+          let folderId = cloudFolder;
+
+          // Jika URL, extract folder ID
+          if (cloudFolder.includes("/folders/")) {
+            const match = cloudFolder.match(/\/folders\/([a-zA-Z0-9-_]+)/);
+            if (match) folderId = match[1];
+          } else if (cloudFolder.includes("?usp=sharing")) {
+            // Remove ?usp=sharing parameter
+            folderId = cloudFolder.replace("?usp=sharing", "").split("/").pop();
+          }
+
+          // Find folder untuk validate
+          const folderCheck =
+            await window.electronAPI.googleFindFolder(folderId);
+          console.log("[Google Drive] Folder check:", folderCheck);
+
+          if (folderCheck.success) {
+            // Upload foto
+            const uploadResult = await window.electronAPI.googleUploadFile({
+              filePath: result.filePath,
+              fileName: fileName,
+              folderId: folderCheck.folderId,
+            });
+
+            if (uploadResult.success) {
+              console.log(
+                `[Google Drive] Upload berhasil: ${uploadResult.fileId}`,
+              );
+            } else {
+              console.warn(
+                `[Google Drive] Upload gagal: ${uploadResult.error}`,
+              );
+            }
+          } else {
+            console.warn(
+              `[Google Drive] Folder tidak ditemukan: ${folderCheck.error}`,
+            );
+          }
+        } catch (err) {
+          console.error("[Google Drive] Upload error:", err.message);
+          // Continue process meski upload gagal
+        }
+      }
+
       setProcessSteps((prev) =>
         prev.map((s, i) =>
           i === 2 ? { ...s, done: true, running: false } : s,
@@ -136,13 +182,21 @@ export default function Output({
   };
 
   // ── Run CETAK (cuma foto tanpa frame) ──
-  const runPrint = () => {
+  const runPrint = async () => {
     if (!processDone || !selectedPrinter || printStatus !== "idle") return;
+    if (printCount < 1) return;
+
     setPrintStatus("printing");
-    setTimeout(() => {
+    try {
+      // Print sesuai dengan printCount
+      for (let i = 0; i < printCount; i++) {
+        // Simulate print job - delay 2200ms per print
+        await new Promise((resolve) => setTimeout(resolve, 2200));
+        setPrintDone((prev) => prev + 1);
+      }
+    } finally {
       setPrintStatus("idle");
-      setPrintDone((prev) => prev + 1);
-    }, 2200);
+    }
   };
 
   // ── CARI TAMU ──

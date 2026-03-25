@@ -1,3 +1,5 @@
+import getAsset from "../utils/getAsset";
+
 export default function ProsesProgres({
   processStatus,
   processProgress,
@@ -93,7 +95,7 @@ export default function ProsesProgres({
             >
               {s.done ? (
                 <img
-                  src="/assets/circle-check.svg"
+                  src={getAsset("/assets/circle-check.svg")}
                   alt="prodo"
                   className="ic-green"
                   style={{

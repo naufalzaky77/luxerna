@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function QRModal({
   qrModalOpen,
@@ -178,7 +179,7 @@ export default function QRModal({
             >
               <img
                 ref={qrwcImgRef}
-                src="/assets/scan.svg"
+                src={getAsset("/assets/scan.svg")}
                 alt="scqr"
                 style={{
                   width: "28px",

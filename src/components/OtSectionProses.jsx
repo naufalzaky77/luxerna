@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import ProsesPath from "./ProsesPath";
 import ProsesProgres from "./ProsesProgres";
+import getAsset from "../utils/getAsset";
 
 export default function SectProses({
   localPath,
@@ -140,7 +141,11 @@ export default function SectProses({
           }}
         >
           <img
-            src={pathLocked ? "/assets/lock-open-2.svg" : "/assets/lock.svg"}
+            src={
+              pathLocked
+                ? getAsset("/assets/lock-open-2.svg")
+                : getAsset("/assets/lock.svg")
+            }
             alt="lock"
             className={pathLocked ? "ic-white" : "ic-blue"}
             style={{
@@ -166,7 +171,7 @@ export default function SectProses({
             >
               <img
                 ref={procsImgRef}
-                src="/assets/settings.svg"
+                src={getAsset("/assets/settings.svg")}
                 alt="procs"
                 style={{
                   width: "28px",

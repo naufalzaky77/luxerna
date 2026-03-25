@@ -1,6 +1,7 @@
 // BAGIAN HOME PILIH KAMERA
 
 import { useState } from "react";
+import getAsset from "../utils/getAsset";
 
 const DCC_BASE = "http://localhost:5513";
 
@@ -58,23 +59,27 @@ function CameraItem({ cam, index, isActive, onSelect }) {
         display: "flex",
         alignItems: "center",
         gap: ".7rem",
-        background: isActive ? "rgba(65,139,250,.08)" : "transparent",
+        background: isActive ? "rgba(65,139,250,.08)" : "rgba(0,0,0,0)",
         transition: "background .15s",
       }}
       onMouseEnter={(e) => {
         if (!isActive) e.currentTarget.style.background = "rgba(0,0,0,.04)";
       }}
       onMouseLeave={(e) => {
-        if (!isActive) e.currentTarget.style.background = "transparent";
+        if (!isActive) e.currentTarget.style.background = "rgba(0,0,0,0)";
       }}
     >
       {isActive && (
         <img
-          src="/assets/circle-check.svg"
+          src={getAsset("/assets/circle-check.svg")}
           alt="check"
           className="ic-blue"
           style={{ width: "1.1rem", height: "1.1rem", flexShrink: 0 }}
         />
+      )}
+
+      {!isActive && (
+        <div style={{ width: "1.1rem", height: "1.1rem", flexShrink: 0 }} />
       )}
 
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -89,7 +94,25 @@ function CameraItem({ cam, index, isActive, onSelect }) {
             textOverflow: "ellipsis",
           }}
         >
-          {cam.label || cam.model || `Kamera ${index + 1}`}
+          {(() => {
+            let displayLabel = cam.label || cam.model || "";
+
+            if (!displayLabel || displayLabel.trim() === "") {
+              if (
+                cam.type === "webcam" &&
+                cam.deviceId &&
+                (cam.deviceId.toLowerCase().includes("obs") ||
+                  cam.deviceId.toLowerCase().includes("virtual"))
+              ) {
+                displayLabel = "OBS Virtual Kamera";
+              } else if (cam.type === "dslr") {
+                displayLabel = `DSLR`;
+              } else {
+                displayLabel = `Webcam`;
+              }
+            }
+            return displayLabel;
+          })()}
         </div>
         {/* Sub-label model untuk DSLR */}
         {cam.type === "dslr" && cam.model && cam.model !== cam.label && (
@@ -104,25 +127,6 @@ function CameraItem({ cam, index, isActive, onSelect }) {
           </div>
         )}
       </div>
-
-      <span
-        style={{
-          fontSize: ".62rem",
-          fontWeight: "var(--fw-semiBold)",
-          padding: ".12rem .4rem",
-          borderRadius: "4px",
-          background: badgeColor.bg,
-          color: badgeColor.text,
-          flexShrink: 0,
-          letterSpacing: ".04rem",
-        }}
-      >
-        {cam.type === "dslr"
-          ? "DSLR"
-          : cam.isCapCard
-            ? "CAPTURE CARD"
-            : "WEBCAM"}
-      </span>
     </div>
   );
 }
@@ -134,6 +138,27 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
   const [cameraDropdownOpen, setCameraDropdownOpen] = useState(false);
   const [cameraScanning, setCameraScanning] = useState(false);
   const [dccAvailable, setDccAvailable] = useState(null);
+
+  // Helper untuk generate label yang konsisten
+  const getCameraLabel = (cam) => {
+    let label = cam.label || cam.model || "";
+
+    if (!label || label.trim() === "") {
+      if (
+        cam.type === "webcam" &&
+        cam.deviceId &&
+        (cam.deviceId.toLowerCase().includes("obs") ||
+          cam.deviceId.toLowerCase().includes("virtual"))
+      ) {
+        label = "OBS Virtual Kamera";
+      } else if (cam.type === "dslr") {
+        label = `DSLR`;
+      } else {
+        label = `Webcam`;
+      }
+    }
+    return label;
+  };
 
   const scanCameras = async () => {
     setCameraScanning(true);
@@ -149,14 +174,36 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
       const devices = await navigator.mediaDevices.enumerateDevices();
       webcams = devices
         .filter((d) => d.kind === "videoinput")
-        .map((d) => ({
-          ...d,
-          type: "webcam",
-          isCapCard: /elgato|avermedia|magewell|cam link|4k60|game cap/i.test(
-            d.label,
-          ),
-        }));
-    } catch {
+        .map((d, idx) => {
+          // Generate better label untuk webcam
+          let label = d.label;
+
+          // Jika label kosong, coba gunakan deviceId atau pattern matching
+          if (!label || label.trim() === "") {
+            // Check apakah ini OBS Virtual Camera berdasarkan deviceId pattern
+            if (
+              d.deviceId &&
+              (d.deviceId.includes("obs") || d.deviceId.includes("virtual"))
+            ) {
+              label = "OBS Virtual Kamera";
+            } else {
+              // Fallback ke generic nama
+              label = `Webcam ${idx + 1}`;
+            }
+          }
+
+          return {
+            ...d,
+            label,
+            type: "webcam",
+            isCapCard: /elgato|avermedia|magewell|cam link|4k60|game cap/i.test(
+              label || d.label,
+            ),
+          };
+        });
+      console.log("[Camera Debug] Webcams after mapping:", webcams);
+    } catch (err) {
+      console.error("[Camera Error] Scanning webcam failed:", err.message);
       // Permission denied atau tidak ada webcam — lanjut
     }
 
@@ -190,7 +237,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
   const barLabel = () => {
     if (cameraScanning) return "Mencari kamera...";
     if (!selectedCamera) return "PILIH KAMERA!";
-    return selectedCamera.label || selectedCamera.model || "Kamera";
+    return getCameraLabel(selectedCamera);
   };
 
   const webcams = cameras.filter((c) => c.type === "webcam");
@@ -235,7 +282,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <img
-            src="/assets/camera-plus.svg"
+            src={getAsset("/assets/camera-plus.svg")}
             alt="cam"
             className={selectedCamera ? "ic-blue" : "ic-grey"}
             style={{ width: "1.5rem", height: "1.5rem" }}
@@ -243,39 +290,10 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
           <span style={{ fontFamily: "var(--f)", fontSize: "1rem" }}>
             {barLabel()}
           </span>
-          {/* Badge tipe di bar */}
-          {selectedCamera && (
-            <span
-              style={{
-                fontSize: ".65rem",
-                fontWeight: "var(--fw-semiBold)",
-                padding: ".15rem .45rem",
-                borderRadius: "4px",
-                background:
-                  selectedCamera.type === "dslr"
-                    ? "rgba(139,92,246,.15)"
-                    : selectedCamera.isCapCard
-                      ? "rgba(16,185,129,.15)"
-                      : "rgba(65,139,250,.15)",
-                color:
-                  selectedCamera.type === "dslr"
-                    ? "#7c3aed"
-                    : selectedCamera.isCapCard
-                      ? "#059669"
-                      : "var(--secondary)",
-              }}
-            >
-              {selectedCamera.type === "dslr"
-                ? "DSLR"
-                : selectedCamera.isCapCard
-                  ? "CAPTURE CARD"
-                  : "WEBCAM"}
-            </span>
-          )}
         </div>
 
         <img
-          src="/assets/caret-down.svg"
+          src={getAsset("/assets/caret-down.svg")}
           alt="caret"
           className="ic-blue"
           style={{
@@ -315,7 +333,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
               }}
             >
               <img
-                src="/assets/rotate-clockwise-2.svg"
+                src={getAsset("/assets/rotate-clockwise-2.svg")}
                 alt="spin"
                 className="ic-blue"
                 style={{
@@ -361,30 +379,48 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
               {webcams.length > 0 && (
                 <>
                   <GroupLabel label="WEBCAM / CAPTURE CARD" />
-                  {webcams.map((cam, i) => (
-                    <CameraItem
-                      key={cam.deviceId}
-                      cam={cam}
-                      index={i}
-                      isActive={selectedCamera?.deviceId === cam.deviceId}
-                      onSelect={selectCamera}
-                    />
-                  ))}
+                  {webcams.map((cam, i) => {
+                    const selectedLabel = selectedCamera
+                      ? getCameraLabel(selectedCamera)
+                      : "";
+                    const camLabel = getCameraLabel(cam);
+                    const isActive =
+                      selectedLabel && camLabel && selectedLabel === camLabel;
+
+                    return (
+                      <CameraItem
+                        key={cam.deviceId}
+                        cam={cam}
+                        index={i}
+                        isActive={isActive}
+                        onSelect={selectCamera}
+                      />
+                    );
+                  })}
                 </>
               )}
 
               {dslrs.length > 0 && (
                 <>
                   <GroupLabel label="DSLR / MIRRORLESS (USB)" />
-                  {dslrs.map((cam, i) => (
-                    <CameraItem
-                      key={cam.deviceId}
-                      cam={cam}
-                      index={i}
-                      isActive={selectedCamera?.deviceId === cam.deviceId}
-                      onSelect={selectCamera}
-                    />
-                  ))}
+                  {dslrs.map((cam, i) => {
+                    const selectedLabel = selectedCamera
+                      ? getCameraLabel(selectedCamera)
+                      : "";
+                    const camLabel = getCameraLabel(cam);
+                    const isActive =
+                      selectedLabel && camLabel && selectedLabel === camLabel;
+
+                    return (
+                      <CameraItem
+                        key={cam.deviceId}
+                        cam={cam}
+                        index={i}
+                        isActive={isActive}
+                        onSelect={selectCamera}
+                      />
+                    );
+                  })}
                 </>
               )}
 
@@ -422,7 +458,7 @@ export default function CameraSelect({ locked, settings, onSettingsChange }) {
               }}
             >
               <img
-                src="/assets/rotate-clockwise-2.svg"
+                src={getAsset("/assets/rotate-clockwise-2.svg")}
                 alt="rescan"
                 style={{ width: "1rem", height: "1rem" }}
               />

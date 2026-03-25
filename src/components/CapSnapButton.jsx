@@ -1,6 +1,7 @@
 // BAGIAN CAPTURE TOMBOL SNAP POTRET
 
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function SnapButton({ busy, active, allDone, onShoot, onDone }) {
   const imgRef = useRef(null);
@@ -36,7 +37,7 @@ export default function SnapButton({ busy, active, allDone, onShoot, onDone }) {
         >
           <img
             ref={imgRef}
-            src="/assets/photo-sensor.svg"
+            src={getAsset("/assets/photo-sensor.svg")}
             alt="spho"
             style={{ width: "28px", height: "28px", objectFit: "contain" }}
           />

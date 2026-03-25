@@ -1,6 +1,7 @@
 // BAGIAN CAPTURE SIDEBAR KANAN
 
 import { useState } from "react";
+import getAsset from "../utils/getAsset";
 
 function SlotThumb({ idx, photos, active, busy, setActive, retake, aspect }) {
   const [hovered, setHovered] = useState(false);
@@ -82,7 +83,7 @@ function SlotThumb({ idx, photos, active, busy, setActive, retake, aspect }) {
           >
             <div>
               <img
-                src="/assets/reload.svg"
+                src={getAsset("/assets/reload.svg")}
                 alt="rld"
                 className="ic-white"
                 style={{ width: "3rem", height: "3rem" }}

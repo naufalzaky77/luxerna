@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function PrinterControl({
   printCount,
@@ -75,7 +76,7 @@ export default function PrinterControl({
       >
         <img
           ref={prtImgRef}
-          src="/assets/file-arrow-right.svg"
+          src={getAsset("/assets/file-arrow-right.svg")}
           alt="flpr"
           style={{
             width: "28px",

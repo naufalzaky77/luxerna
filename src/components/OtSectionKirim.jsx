@@ -5,6 +5,7 @@ import KirimModeNama from "./KirimModeNama";
 import KirimModeWA from "./KirimModeWA";
 import KirimModeQR from "./KirimModeQR";
 import QRModal from "./QRModal";
+import getAsset from "../utils/getAsset";
 
 export default function SectKirim({
   processDone,
@@ -259,7 +260,7 @@ export default function SectKirim({
             >
               <img
                 ref={delImg3Ref}
-                src="/assets/x.svg"
+                src={getAsset("/assets/x.svg")}
                 alt="rmv"
                 className="rmv-img"
                 style={{
@@ -284,7 +285,7 @@ export default function SectKirim({
           >
             <img
               ref={sendImgRef}
-              src="/assets/send-2.svg"
+              src={getAsset("/assets/send-2.svg")}
               alt="wa"
               style={{
                 width: "28px",

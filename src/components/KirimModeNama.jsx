@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function KirimModeNama({
   guestQuery,
@@ -60,7 +61,7 @@ export default function KirimModeNama({
           }}
         />
         <img
-          src="/assets/search.svg"
+          src={getAsset("/assets/search.svg")}
           alt="nama"
           className="ic-blue"
           style={{
@@ -93,7 +94,7 @@ export default function KirimModeNama({
           >
             <img
               ref={delImg1Ref}
-              src="/assets/x.svg"
+              src={getAsset("/assets/x.svg")}
               alt="rmv"
               className="rmv-img"
               style={{ width: "1.5rem", height: "1.5rem" }}

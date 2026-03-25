@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from "react";
 import Home from "./screens/Home";
 import Capture from "./screens/Capture";
 import Output from "./screens/Output";
-import Admin from "./screens/Admin";
 
 
 

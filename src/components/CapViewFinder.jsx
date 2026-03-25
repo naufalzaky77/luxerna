@@ -1,6 +1,7 @@
 // BAGIAN CAPTURE VIEW LAYAR UNTUK FOTO
 
 import { useEffect, useRef, useState } from "react";
+import getAsset from "../utils/getAsset";
 
 const DCC_BASE = "http://localhost:5513";
 const LV_URL = `${DCC_BASE}/api/liveview.jpg`;
@@ -166,7 +167,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
       {!selectedCamera && (
         <div style={overlayStyle}>
           <img
-            src="/assets/camera-plus.svg"
+            src={getAsset("/assets/camera-plus.svg")}
             alt="cam"
             style={{
               width: "3rem",
@@ -192,7 +193,7 @@ export default function ViewFinder({ cd, selectedCamera, videoRef, imgRef }) {
       {selectedCamera?.type === "dslr" && !dslrReady && !camError && (
         <div style={overlayStyle}>
           <img
-            src="/assets/rotate-clockwise-2.svg"
+            src={getAsset("/assets/rotate-clockwise-2.svg")}
             alt="loading"
             style={{
               width: "2rem",

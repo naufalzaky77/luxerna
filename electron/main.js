@@ -6,6 +6,7 @@ const path = require("path");
 const fs   = require("fs");
 const http = require("http");
 const os   = require("os");
+const googleDrive = require("./googleDriveManager");
 
 const platform = os.platform(); // "win32" | "darwin"
 
@@ -36,7 +37,8 @@ async function launchDCC() {
     return;
   }
   if (!fs.existsSync(DCC_EXE)) {
-    console.warn("[DCC] executable tidak ditemukan di:", DCC_EXE);
+    console.log("[DCC] DSLR support tidak tersedia (digiCamControl tidak terinstall)");
+    console.log("[DCC] Kamera OBS Virtual dan USB tetap berfungsi normal");
     return;
   }
   console.log("[DCC] meluncurkan...");
@@ -106,6 +108,8 @@ function createWindow() {
     fullscreen: false,
     kiosk: false,
     frame: true,
+    title: "Luxerna Photobooth",
+    icon: path.join(__dirname, "../build/assets/icon.ico"),
     backgroundColor: "#07060e",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -247,14 +251,16 @@ ipcMain.handle("camera:listDSLR", async () => {
       const data = await res.json();
       const list = data?.Data ?? data?.data ?? [];
       return {
-        cameras: list.map((cam, i) => ({
-          deviceId: `dslr_${i}`,
-          label: cam.DisplayName || cam.DeviceName || `DSLR ${i + 1}`,
-          model: cam.DeviceName || "",
-          type: "dslr",
-        }))
+        cameras: list.map((cam, i) => {
+          return {
+            deviceId: `dslr_${i}`,
+            label: cam.DisplayName || cam.DeviceName || cam.Name || `DSLR ${i + 1}`,
+            model: cam.DeviceName || cam.Name || "",
+            type: "dslr",
+          };
+        })
       };
-    } catch {
+    } catch (err) {
       return { cameras: [] };
     }
   }
@@ -390,16 +396,46 @@ ipcMain.handle("camera:capture", async () => {
 // ─── Printer ──────────────────────────────────────────────────────────────────
 ipcMain.handle("printer:list", async () => {
   if (!printer) return { printers: [], error: "node-printer not available" };
+  
   try {
-    const list = printer.getPrinters();
-    return {
-      printers: list.map((p) => ({
-        name:      p.name,
-        status:    p.status === "IDLE" || p.status === "READY" ? "ready" : p.status.toLowerCase(),
-        isDefault: p.isDefault || false,
-      })),
-    };
+    const { exec } = require("child_process");
+    
+    return new Promise((resolve) => {
+      // Use PowerShell to list ALL printers via WMI (including offline ones)
+      const cmd = `powershell -NoProfile -Command "Get-WmiObject Win32_Printer -Filter \\"NOT PortName LIKE 'FILE%'\\" | Select-Object Name, PrinterStatus, @{Name='Status';Expression={switch($_.PrinterStatus){0{'ready'}1{'paused'}2{'error'}3{'deleting'}4{'paper-jam'}5{'paper-out'}6{'manual-feed'}7{'power-save'}default{'offline'}}}} | ConvertTo-Json"`;
+      
+      exec(cmd, { encoding: 'utf8' }, (error, stdout, stderr) => {
+        if (error) {
+          console.error("[Printer Error] Failed to list printers:", error.message);
+          return resolve({ printers: [], error: error.message });
+        }
+        
+        try {
+          let printers = [];
+          const data = JSON.parse(stdout);
+          
+          // Handle both single printer (object) and multiple printers (array)
+          const printerList = Array.isArray(data) ? data : (data ? [data] : []);
+          
+          console.log("[Printer Debug] Raw WMI data:", printerList);
+          
+          printers = printerList.map((p) => ({
+            name: p.Name,
+            status: p.Status === 'ready' ? 'ready' : 'offline',
+            isDefault: false,
+            rawStatus: p.Status,
+          }));
+          
+          console.log("[Printer Debug] Found printers:", printers);
+          resolve({ printers });
+        } catch (parseErr) {
+          console.error("[Printer Error] Failed to parse printer list:", parseErr.message);
+          resolve({ printers: [], error: parseErr.message });
+        }
+      });
+    });
   } catch (err) {
+    console.error("[Printer Error]", err);
     return { printers: [], error: err.message };
   }
 });
@@ -433,6 +469,27 @@ ipcMain.handle("wa:openChat", async (_, { waNumber, eventName }) => {
   } catch (err) {
     return { success: false, error: err.message };
   }
+});
+
+// ─── Google Drive ─────────────────────────────────────────────────────────────
+ipcMain.handle("google:setupCredentials", async (_, credentialsData) => {
+  return await googleDrive.setupCredentials(credentialsData);
+});
+
+ipcMain.handle("google:authenticate", async () => {
+  return await googleDrive.authenticate();
+});
+
+ipcMain.handle("google:isAuthenticated", async () => {
+  return { authenticated: googleDrive.isAuthenticated() };
+});
+
+ipcMain.handle("google:findFolder", async (_, folderIdOrName) => {
+  return await googleDrive.findFolder(folderIdOrName);
+});
+
+ipcMain.handle("google:uploadFile", async (_, { filePath, fileName, folderId }) => {
+  return await googleDrive.uploadFile(filePath, fileName, folderId);
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

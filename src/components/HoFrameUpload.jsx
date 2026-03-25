@@ -1,6 +1,7 @@
 // BAGIAN HOME UPLOAD TEMPLATE FRAME
 
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function FrameUpload({
   templateFile,
@@ -74,7 +75,7 @@ export default function FrameUpload({
           style={{ cursor: locked ? "default" : "pointer" }}
         >
           <img
-            src="/assets/upload.svg"
+            src={getAsset("/assets/upload.svg")}
             alt="up"
             className="up-img"
             style={{
@@ -141,7 +142,7 @@ export default function FrameUpload({
               }}
             >
               <img
-                src="/assets/file.svg"
+                src={getAsset("/assets/file.svg")}
                 alt="file"
                 className="ic-blue"
                 style={{
@@ -164,7 +165,7 @@ export default function FrameUpload({
             >
               <img
                 ref={rmvImgRef}
-                src="/assets/x.svg"
+                src={getAsset("/assets/x.svg")}
                 alt="rmv"
                 className="rmv-img"
                 style={{

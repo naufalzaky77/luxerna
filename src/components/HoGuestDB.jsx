@@ -1,6 +1,7 @@
 // BAGIAN HOME PILIH FILE DATABASE TAMU
 
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function GuestDB({ locked, settings, onSettingsChange }) {
   const rmvImgRef = useRef(null);
@@ -74,7 +75,7 @@ export default function GuestDB({ locked, settings, onSettingsChange }) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <img
-            src="/assets/database-import.svg"
+            src={getAsset("/assets/database-import.svg")}
             alt="db"
             className={guestCSV ? "ic-blue" : "ic-grey"}
             style={{ width: "1.5rem", height: "1.5rem" }}
@@ -99,14 +100,14 @@ export default function GuestDB({ locked, settings, onSettingsChange }) {
               e.stopPropagation();
               onSettingsChange({ ...settings, guestCSV: null });
             }}
-            className="ghost-btn"
+            className="del-btn"
             onMouseEnter={handleRmvEnter}
             onMouseLeave={handleRmvLeave}
             style={{ flexShrink: 0 }}
           >
             <img
               ref={rmvImgRef}
-              src="/assets/x.svg"
+              src={getAsset("/assets/x.svg")}
               alt="rmv"
               className="rmv-img"
               style={{ width: "1rem", height: "1rem" }}

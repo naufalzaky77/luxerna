@@ -1,6 +1,7 @@
 // BAGIAN CAPTURE HEADER BAR ATAS
 
 import TimeDate from "./HoTimeDate";
+import getAsset from "../utils/getAsset";
 
 export default function HeadBar({
   onBack,
@@ -31,7 +32,7 @@ export default function HeadBar({
           }}
         >
           <img
-            src={"/assets/home-cog.svg"}
+            src={getAsset("/assets/home-cog.svg")}
             alt="back"
             className="ic-blue"
             style={{
@@ -44,7 +45,7 @@ export default function HeadBar({
 
         {/* BAGIAN LOGO LUXERNA */}
         <img
-          src="/assets/Luxerna_Full.webp"
+          src={getAsset("/assets/Luxerna_Full.webp")}
           alt="logo"
           style={{
             height: "34px",
@@ -145,7 +146,7 @@ export default function HeadBar({
             >
               {photos[i] ? (
                 <img
-                  src="/assets/circle-check.svg"
+                  src={getAsset("/assets/circle-check.svg")}
                   alt="done"
                   className="ic-blue"
                   style={{ width: "2rem", height: "2rem" }}

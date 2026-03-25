@@ -58,5 +58,25 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   selectFile: (args) =>
     ipcRenderer.invoke("dialog:selectFile", args),
+  // ── Google Drive ────────────────────────────────────────────────────────
+  googleSetupCredentials: (credentialsData) =>
+    ipcRenderer.invoke("google:setupCredentials", credentialsData),
+    // Upload credentials.json content
 
+  googleAuthenticate: () =>
+    ipcRenderer.invoke("google:authenticate"),
+    // Open browser untuk OAuth consent
+
+  googleIsAuthenticated: () =>
+    ipcRenderer.invoke("google:isAuthenticated"),
+    // Check if already authenticated
+
+  googleFindFolder: (folderIdOrName) =>
+    ipcRenderer.invoke("google:findFolder", folderIdOrName),
+    // Find folder by ID or name
+
+  googleUploadFile: (args) =>
+    ipcRenderer.invoke("google:uploadFile", args),
+    // args: { filePath, fileName, folderId }
+    // returns: { success, fileId?, link? }
 });

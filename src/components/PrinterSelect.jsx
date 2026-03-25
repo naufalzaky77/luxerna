@@ -1,3 +1,5 @@
+import getAsset from "../utils/getAsset";
+
 export default function PrinterSelect({
   printers,
   setPrinters,
@@ -47,9 +49,13 @@ export default function PrinterSelect({
           border: printerLocked
             ? ".1rem solid rgba(0,0,0,.2)"
             : printerLocked
-              ? ".1rem solid rgba(0,0,0,.2)"
+              ? ".1rem solid var(0,0,0,.2)"
               : `.1rem solid ${printerDropOpen ? "var(--secondary)" : "var(--white)"}`,
-          color: selectedPrinter ? "var(--primary)" : "rgba(0,0,0,.4)",
+          color: printerLocked
+            ? "rgba(0,0,0,.4)"
+            : selectedPrinter
+              ? "var(--secondary)"
+              : "rgba(0,0,0,.4)",
           fontFamily: "var(--f)",
           fontWeight: "var(--fw-medium)",
           fontSize: "1rem",
@@ -66,14 +72,14 @@ export default function PrinterSelect({
           }}
         >
           <img
-            src="/assets/printer.svg"
+            src={getAsset("/assets/printer.svg")}
             alt="prt"
             className={
               printerLocked
                 ? "ic-grey"
                 : selectedPrinter
                   ? "ic-blue"
-                  : "ic-blue"
+                  : "ic-grey"
             }
             style={{ width: "1.3rem", height: "1.3rem" }}
           />
@@ -92,9 +98,9 @@ export default function PrinterSelect({
           </span>
         </div>
         <img
-          src="/assets/caret-down.svg"
+          src={getAsset("/assets/caret-down.svg")}
           alt="cdw"
-          className="ic-blue"
+          className={printerLocked ? "ic-grey" : "ic-blue"}
           style={{
             width: "1rem",
             height: "1rem",
@@ -131,7 +137,7 @@ export default function PrinterSelect({
               }}
             >
               <img
-                src="/assets/rotate-clockwise-2.svg"
+                src={getAsset("/assets/rotate-clockwise-2.svg")}
                 alt="rcw"
                 className="ic-blue"
                 style={{
@@ -196,7 +202,7 @@ export default function PrinterSelect({
                   >
                     {isActive && (
                       <img
-                        src="/assets/circle-check.svg"
+                        src={getAsset("/assets/circle-check.svg")}
                         alt="ccc"
                         className="ic-blue"
                         style={{ width: "1.3rem", height: "1.3rem" }}
@@ -240,7 +246,7 @@ export default function PrinterSelect({
               }}
             >
               <img
-                src="/assets/rotate-clockwise-2.svg"
+                src={getAsset("/assets/rotate-clockwise-2.svg")}
                 alt="rcw"
                 style={{ width: "1rem", height: "1rem" }}
               />

@@ -1,5 +1,7 @@
 // BAGIAN HOME TOMBOL KUNCI ADMIN
 
+import getAsset from "../utils/getAsset";
+
 export default function AdminButton({ adminUnlocked, onToggleAdmin }) {
   return (
     <button
@@ -26,7 +28,11 @@ export default function AdminButton({ adminUnlocked, onToggleAdmin }) {
       }}
     >
       <img
-        src={adminUnlocked ? "/assets/lock-open-2.svg" : "/assets/lock.svg"}
+        src={
+          adminUnlocked
+            ? getAsset("/assets/lock-open-2.svg")
+            : getAsset("/assets/lock.svg")
+        }
         alt="lock"
         className={adminUnlocked ? "ic-white" : "ic-blue"}
         style={{

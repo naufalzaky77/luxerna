@@ -2,6 +2,7 @@
 
 import PrinterSelect from "./PrinterSelect";
 import PrinterControl from "./PrinterControl";
+import getAsset from "../utils/getAsset";
 
 export default function SectCetak({
   printers,
@@ -139,7 +140,9 @@ export default function SectCetak({
           >
             <img
               src={
-                printerLocked ? "/assets/lock-open-2.svg" : "/assets/lock.svg"
+                printerLocked
+                  ? getAsset("/assets/lock-open-2.svg")
+                  : getAsset("/assets/lock.svg")
               }
               alt="lock"
               className={printerLocked ? "ic-white" : "ic-blue"}

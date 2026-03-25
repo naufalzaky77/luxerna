@@ -1,5 +1,7 @@
 // BAGIAN OUTPUT STATUS BADGE DI KIRI
 
+import getAsset from "../utils/getAsset";
+
 export default function StatusBadge({
   processDone,
   printDone,
@@ -19,7 +21,7 @@ export default function StatusBadge({
       {processDone && (
         <div className="done-yes">
           <img
-            src="/assets/circle-check.svg"
+            src={getAsset("/assets/circle-check.svg")}
             alt="done"
             className="ic-green"
             style={{
@@ -58,7 +60,7 @@ export default function StatusBadge({
       {Array.from({ length: printDone }).map((_, i) => (
         <div key={i} className="done-yes">
           <img
-            src="/assets/circle-check.svg"
+            src={getAsset("/assets/circle-check.svg")}
             alt="done"
             className="ic-green"
             style={{
@@ -97,7 +99,7 @@ export default function StatusBadge({
       {printStatus === "printing" && (
         <div className="done-wait">
           <img
-            src="/assets/clock.svg"
+            src={getAsset("/assets/clock.svg")}
             alt="done"
             className="ic-yellow"
             style={{
@@ -136,7 +138,7 @@ export default function StatusBadge({
       {waStatus === "done" && (
         <div className="done-yes">
           <img
-            src="/assets/circle-check.svg"
+            src={getAsset("/assets/circle-check.svg")}
             alt="done"
             className="ic-green"
             style={{

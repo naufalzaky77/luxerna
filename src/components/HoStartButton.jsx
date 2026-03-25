@@ -1,6 +1,7 @@
 // BAGIAN HOME TOMBOL MULAI
 
 import { useRef } from "react";
+import getAsset from "../utils/getAsset";
 
 export default function StartButton({ onStart }) {
   const imgRef = useRef(null);
@@ -35,7 +36,7 @@ export default function StartButton({ onStart }) {
     >
       <img
         ref={imgRef}
-        src="/assets/Luxerna_Submark.webp"
+        src={getAsset("/assets/Luxerna_Submark.webp")}
         alt="stic"
         style={{ width: "28px", height: "28px", objectFit: "contain" }}
       />

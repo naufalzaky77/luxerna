@@ -1,3 +1,5 @@
+import getAsset from "../utils/getAsset";
+
 export default function KirimModeQR({ selectedGuest, setQrModalOpen }) {
   return (
     <div style={{ marginBottom: "1rem" }}>
@@ -8,7 +10,7 @@ export default function KirimModeQR({ selectedGuest, setQrModalOpen }) {
           style={{ fontFamily: "var(--f)" }}
         >
           <img
-            src="/assets/qrcode.svg"
+            src={getAsset("/assets/qrcode.svg")}
             alt="qr"
             className="qr-img"
             style={{ width: "3rem", height: "3rem" }}
