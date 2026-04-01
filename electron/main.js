@@ -109,7 +109,9 @@ function createWindow() {
     kiosk: false,
     frame: true,
     title: "Luxerna Photobooth",
-    icon: path.join(__dirname, "../build/assets/icon.ico"),
+    icon: app.isPackaged
+      ? path.join(process.resourcesPath, "icon.ico")
+      : path.join(__dirname, "../buildResources/icon.ico"),
     backgroundColor: "#07060e",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),

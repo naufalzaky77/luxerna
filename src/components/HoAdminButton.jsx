@@ -9,8 +9,8 @@ export default function AdminButton({ adminUnlocked, onToggleAdmin }) {
       onClick={onToggleAdmin}
       style={{
         position: "absolute",
-        bottom: "3rem",
-        left: "3rem",
+        bottom: "2rem",
+        left: "2rem",
         background: adminUnlocked ? "var(--secondary)" : "transparent",
         border: "2px solid var(--secondary)",
         borderRadius: ".5rem",

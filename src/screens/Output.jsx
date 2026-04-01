@@ -185,15 +185,33 @@ export default function Output({
   const runPrint = async () => {
     if (!processDone || !selectedPrinter || printStatus !== "idle") return;
     if (printCount < 1) return;
+    if (!lastSavedPath) return;
 
     setPrintStatus("printing");
+    let hasError = false;
+
     try {
-      // Print sesuai dengan printCount
-      for (let i = 0; i < printCount; i++) {
-        // Simulate print job - delay 2200ms per print
-        await new Promise((resolve) => setTimeout(resolve, 2200));
-        setPrintDone((prev) => prev + 1);
+      if (window.electronAPI && window.electronAPI.printPhoto) {
+        const result = await window.electronAPI.printPhoto({
+          printerName: selectedPrinter.name,
+          filePath: lastSavedPath,
+          copies: printCount,
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || "Print gagal");
+        }
+
+        setPrintDone((prev) => prev + printCount);
+      } else {
+        // fallback for non-electron environment (development web)
+        for (let i = 0; i < printCount; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 2200));
+          setPrintDone((prev) => prev + 1);
+        }
       }
+    } catch (err) {
+      console.error("runPrint error", err);
     } finally {
       setPrintStatus("idle");
     }

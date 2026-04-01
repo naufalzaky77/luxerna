@@ -1,6 +1,6 @@
 {
   "name": "luxerna",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Luxerna Photobooth - Aplikasi Photobooth Profesional",
   "author": "Luxerna Lensa Nusantara",
   "private": true,
@@ -58,29 +58,50 @@
   "build": {
     "appId": "com.luxerna.photobooth",
     "productName": "Luxerna Photobooth",
-    "icon": "favicon.ico",
-    "publish": {
-      "provider": "generic",
-      "url": "http://localhost"
-    },
+    "copyright": "Copyright © 2026 Luxerna Lensa Nusantara",
+    "publish": null,
+    "forceCodeSigning": false,
     "extraMetadata": {
       "main": "electron/main.js"
     },
-    "mac": {
+   "mac": {
       "target": "dmg",
-      "icon": "icon.icns"
+      "icon": "buildResources/icon.icns",
+      "category": "public.app-category.photography"
     },
     "win": {
-      "target": "portable",
-      "icon": "icon.ico"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "buildResources/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "requestedExecutionLevel": "asInvoker"
     },
     "files": [
       "build/**/*",
       "electron/**/*",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "package.json"
     ],
     "directories": {
-      "buildResources": "public"
+      "buildResources": "buildResources",
+      "output": "dist"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Luxerna Photobooth",
+      "installerIcon": "buildResources/icon.ico",
+      "uninstallerIcon": "buildResources/icon.ico",
+      "installerHeaderIcon": "buildResources/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "menuCategory": true
     }
   }
 }
