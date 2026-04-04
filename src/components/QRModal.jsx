@@ -35,18 +35,31 @@ export default function QRModal({
   );
 
   useEffect(() => {
-    if (!qrModalOpen || !selectedCamera) return;
+    if (!qrModalOpen) return;
+
     let stream;
     const startCam = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: selectedCamera.deviceId } },
-        });
+        // Ambil semua kamera yang tersedia
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((d) => d.kind === "videoinput");
+
+        // Pilih kamera yang BUKAN kamera photobooth (selectedCamera)
+        const laptopCam = videoDevices.find((d) =>
+          selectedCamera ? d.deviceId !== selectedCamera.deviceId : true,
+        );
+
+        const constraints = laptopCam
+          ? { video: { deviceId: { exact: laptopCam.deviceId } } }
+          : { video: true }; // fallback ke kamera default kalau tidak ketemu
+
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         if (qrVideoRef.current) qrVideoRef.current.srcObject = stream;
       } catch (err) {
         console.error("QR cam error:", err);
       }
     };
+
     startCam();
     return () => {
       if (stream) stream.getTracks().forEach((t) => t.stop());
