@@ -7,6 +7,22 @@ import KirimModeQR from "./KirimModeQR";
 import QRModal from "./QRModal";
 import getAsset from "../utils/getAsset";
 
+const Section = ({ title, children, style = {} }) => (
+  <div className="card" style={{ padding: "20px 22px", ...style }}>
+    <div
+      style={{
+        color: "rgba(0,0,0,.6)",
+        fontSize: "10px",
+        letterSpacing: "3px",
+        marginBottom: "16px",
+      }}
+    >
+      {title}
+    </div>
+    {children}
+  </div>
+);
+
 export default function SectKirim({
   processDone,
   waStatus,
@@ -62,22 +78,6 @@ export default function SectKirim({
     delImg3Ref,
     "spinLogo .3s ease forwards",
     "spinLogoReverse .3s ease forwards",
-  );
-
-  const Section = ({ title, children, style = {} }) => (
-    <div className="card" style={{ padding: "20px 22px", ...style }}>
-      <div
-        style={{
-          color: "rgba(0,0,0,.6)",
-          fontSize: "10px",
-          letterSpacing: "3px",
-          marginBottom: "16px",
-        }}
-      >
-        {title}
-      </div>
-      {children}
-    </div>
   );
 
   return (

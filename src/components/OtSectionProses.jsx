@@ -5,6 +5,22 @@ import ProsesPath from "./ProsesPath";
 import ProsesProgres from "./ProsesProgres";
 import getAsset from "../utils/getAsset";
 
+const Section = ({ title, children, style = {} }) => (
+  <div className="card" style={{ padding: "20px 22px", ...style }}>
+    <div
+      style={{
+        color: "rgba(0,0,0,.6)",
+        fontSize: "10px",
+        letterSpacing: "3px",
+        marginBottom: "16px",
+      }}
+    >
+      {title}
+    </div>
+    {children}
+  </div>
+);
+
 export default function SectProses({
   localPath,
   setLocalPath,
@@ -38,22 +54,6 @@ export default function SectProses({
     void img.offsetWidth;
     img.style.animation = "spinLogoReverse .3s ease forwards";
   };
-
-  const Section = ({ title, children, style = {} }) => (
-    <div className="card" style={{ padding: "20px 22px", ...style }}>
-      <div
-        style={{
-          color: "rgba(0,0,0,.6)",
-          fontSize: "10px",
-          letterSpacing: "3px",
-          marginBottom: "16px",
-        }}
-      >
-        {title}
-      </div>
-      {children}
-    </div>
-  );
 
   return (
     <Section
