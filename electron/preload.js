@@ -58,6 +58,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   selectFile: (args) =>
     ipcRenderer.invoke("dialog:selectFile", args),
+
   // ── Google Drive ────────────────────────────────────────────────────────
   googleSetupCredentials: (credentialsData) =>
     ipcRenderer.invoke("google:setupCredentials", credentialsData),

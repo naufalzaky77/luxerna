@@ -32,26 +32,18 @@ function isDCCRunning() {
 
 async function launchDCC() {
   const alreadyRunning = await isDCCRunning();
-  if (alreadyRunning) {
-    console.log("[DCC] sudah berjalan, skip launch");
-    return;
-  }
-  if (!fs.existsSync(DCC_EXE)) {
-    console.log("[DCC] DSLR support tidak tersedia (digiCamControl tidak terinstall)");
-    console.log("[DCC] Kamera OBS Virtual dan USB tetap berfungsi normal");
-    return;
-  }
-  console.log("[DCC] meluncurkan...");
+  if (alreadyRunning) return;
+  
+  if (!fs.existsSync(DCC_EXE)) return;
+
   dccProcess = spawn(DCC_EXE, [], {
     detached: false,
     stdio: "ignore",
   });
-  dccProcess.on("error", (err) => {
-    console.error("[DCC] gagal launch:", err.message);
+  dccProcess.on("error", () => {
     dccProcess = null;
   });
-  dccProcess.on("exit", (code) => {
-    console.log("[DCC] keluar dengan kode:", code);
+  dccProcess.on("exit", () => {
     dccProcess = null;
   });
   await waitForDCC(8000);
@@ -64,13 +56,11 @@ function waitForDCC(timeoutMs = 8000) {
       const running = await isDCCRunning();
       if (running) {
         clearInterval(interval);
-        console.log("[DCC] siap");
         resolve(true);
         return;
       }
       if (Date.now() - start > timeoutMs) {
         clearInterval(interval);
-        console.warn("[DCC] timeout");
         resolve(false);
       }
     }, 500);
@@ -81,9 +71,8 @@ function killDCC() {
   if (!dccProcess) return;
   try {
     dccProcess.kill();
-    console.log("[DCC] proses dihentikan");
   } catch (err) {
-    console.warn("[DCC] gagal kill:", err.message);
+    // Ignored silently
   }
   dccProcess = null;
 }
@@ -93,7 +82,7 @@ let printer;
 try {
   printer = require("node-printer");
 } catch (e) {
-  console.warn("node-printer not installed:", e.message);
+  // Ignored silently
 }
 
 // ─── Window ───────────────────────────────────────────────────────────────────
@@ -244,7 +233,7 @@ ipcMain.handle("dialog:selectFile", async (_, { filters }) => {
 
 // ─── Kamera universal (Windows: DCC | macOS: gphoto2) ─────────────────────────
 
-let liveViewCancelled = false; // ✅ di atas semua handler kamera
+let liveViewCancelled = false; 
 
 ipcMain.handle("camera:listDSLR", async () => {
   if (platform === "win32") {
@@ -397,68 +386,66 @@ ipcMain.handle("camera:capture", async () => {
 
 // ─── Printer ──────────────────────────────────────────────────────────────────
 ipcMain.handle("printer:list", async () => {
-  if (!printer) return { printers: [], error: "node-printer not available" };
+  const { exec } = require("child_process");
   
-  try {
-    const { exec } = require("child_process");
+  return new Promise((resolve) => {
+    const cmd = `powershell -NoProfile -Command "Get-WmiObject Win32_Printer -Filter \\"NOT PortName LIKE 'FILE%'\\" | Select-Object Name, PrinterStatus, @{Name='Status';Expression={switch($_.PrinterStatus){0{'ready'}1{'paused'}2{'error'}3{'deleting'}4{'paper-jam'}5{'paper-out'}6{'manual-feed'}7{'power-save'}default{'offline'}}}} | ConvertTo-Json"`;
     
-    return new Promise((resolve) => {
-      // Use PowerShell to list ALL printers via WMI (including offline ones)
-      const cmd = `powershell -NoProfile -Command "Get-WmiObject Win32_Printer -Filter \\"NOT PortName LIKE 'FILE%'\\" | Select-Object Name, PrinterStatus, @{Name='Status';Expression={switch($_.PrinterStatus){0{'ready'}1{'paused'}2{'error'}3{'deleting'}4{'paper-jam'}5{'paper-out'}6{'manual-feed'}7{'power-save'}default{'offline'}}}} | ConvertTo-Json"`;
-      
-      exec(cmd, { encoding: 'utf8' }, (error, stdout, stderr) => {
-        if (error) {
-          console.error("[Printer Error] Failed to list printers:", error.message);
-          return resolve({ printers: [], error: error.message });
-        }
-        
-        try {
-          let printers = [];
-          const data = JSON.parse(stdout);
-          
-          // Handle both single printer (object) and multiple printers (array)
-          const printerList = Array.isArray(data) ? data : (data ? [data] : []);
-          
-          console.log("[Printer Debug] Raw WMI data:", printerList);
-          
-          printers = printerList.map((p) => ({
-            name: p.Name,
-            status: p.Status === 'ready' ? 'ready' : 'offline',
-            isDefault: false,
-            rawStatus: p.Status,
-          }));
-          
-          console.log("[Printer Debug] Found printers:", printers);
-          resolve({ printers });
-        } catch (parseErr) {
-          console.error("[Printer Error] Failed to parse printer list:", parseErr.message);
-          resolve({ printers: [], error: parseErr.message });
-        }
-      });
+    exec(cmd, { encoding: 'utf8' }, (error, stdout) => {
+      if (error) {
+        return resolve({ printers: [], error: error.message });
+      }
+      try {
+        const data = JSON.parse(stdout);
+        const printerList = Array.isArray(data) ? data : (data ? [data] : []);
+        const printers = printerList.map((p) => ({
+          name: p.Name,
+          status: p.Status === 'ready' ? 'ready' : 'offline',
+          isDefault: false,
+          rawStatus: p.Status,
+        }));
+        resolve({ printers });
+      } catch (parseErr) {
+        resolve({ printers: [], error: parseErr.message });
+      }
     });
-  } catch (err) {
-    console.error("[Printer Error]", err);
-    return { printers: [], error: err.message };
-  }
+  });
 });
 
-ipcMain.handle("printer:print", async (_, { printerName, filePath }) => {
-  if (!printer) return { success: false, error: "node-printer not available" };
+ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1 }) => {
   try {
-    printer.printFile({
-      filename: filePath,
-      printer:  printerName,
-      success:  (jobID) => console.log("Print job:", jobID),
-      error:    (err)   => console.error("Print error:", err),
-    });
+    const { exec } = require("child_process");
+
+    for (let i = 0; i < copies; i++) {
+      await new Promise((resolve, reject) => {
+        const cmd = `powershell -NoProfile -Command "` +
+          `Add-Type -AssemblyName System.Drawing; ` +
+          `Add-Type -AssemblyName System.Windows.Forms; ` +
+          `$img = [System.Drawing.Image]::FromFile('${filePath}'); ` +
+          `$pd = New-Object System.Drawing.Printing.PrintDocument; ` +
+          `$pd.PrinterSettings.PrinterName = '${printerName}'; ` +
+          `$pd.DefaultPageSettings.Landscape = $false; ` +
+          `$pd.add_PrintPage({ ` +
+            `param($s, $e); ` +
+            `$e.Graphics.DrawImage($img, $e.MarginBounds); ` +
+          `}); ` +
+          `$pd.Print(); ` +
+          `$img.Dispose(); ` +
+          `$pd.Dispose()"`;
+
+        exec(cmd, { timeout: 30000 }, (error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+    }
+
     return { success: true };
   } catch (err) {
-    // Fallback ke SumatraPDF
-    const { exec } = require("child_process");
-    exec(`SumatraPDF.exe -print-to "${printerName}" "${filePath}"`, (error) => {
-      if (error) console.error("Fallback print error:", error);
-    });
-    return { success: true, note: "Using fallback print method" };
+    return { success: false, error: err.message };
   }
 });
 

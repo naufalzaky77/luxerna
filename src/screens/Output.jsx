@@ -40,7 +40,7 @@ export default function Output({
     { id: "upload", label: "Upload ke cloud storage" },
   ]);
   const [processProgress, setProcessProgress] = useState(0);
-  const processDone = processStatus === "done";
+  const processDone = processStatus === "done" && !!lastSavedPath;
 
   // ── STATE CETAK ──
   const [printerDropOpen, setPrinterDropOpen] = useState(false);
@@ -137,32 +137,16 @@ export default function Output({
           // Find folder untuk validate
           const folderCheck =
             await window.electronAPI.googleFindFolder(folderId);
-          console.log("[Google Drive] Folder check:", folderCheck);
 
           if (folderCheck.success) {
             // Upload foto
-            const uploadResult = await window.electronAPI.googleUploadFile({
+            await window.electronAPI.googleUploadFile({
               filePath: result.filePath,
               fileName: fileName,
               folderId: folderCheck.folderId,
             });
-
-            if (uploadResult.success) {
-              console.log(
-                `[Google Drive] Upload berhasil: ${uploadResult.fileId}`,
-              );
-            } else {
-              console.warn(
-                `[Google Drive] Upload gagal: ${uploadResult.error}`,
-              );
-            }
-          } else {
-            console.warn(
-              `[Google Drive] Folder tidak ditemukan: ${folderCheck.error}`,
-            );
           }
         } catch (err) {
-          console.error("[Google Drive] Upload error:", err.message);
           // Continue process meski upload gagal
         }
       }
@@ -176,19 +160,20 @@ export default function Output({
 
       setProcessStatus("done");
     } catch (err) {
-      console.error("Process error:", err);
       setProcessStatus("idle");
     }
   };
 
   // ── Run CETAK (cuma foto tanpa frame) ──
   const runPrint = async () => {
-    if (!processDone || !selectedPrinter || printStatus !== "idle") return;
-    if (printCount < 1) return;
-    if (!lastSavedPath) return;
+    if (!processDone || !selectedPrinter || printStatus !== "idle") {
+      return;
+    }
+    if (!lastSavedPath) {
+      return;
+    }
 
     setPrintStatus("printing");
-    let hasError = false;
 
     try {
       if (window.electronAPI && window.electronAPI.printPhoto) {
@@ -211,7 +196,7 @@ export default function Output({
         }
       }
     } catch (err) {
-      console.error("runPrint error", err);
+      // Print error ignored silently
     } finally {
       setPrintStatus("idle");
     }
@@ -265,7 +250,6 @@ export default function Output({
       });
       setWaStatus("done");
     } catch (err) {
-      console.error("sendWa error:", err);
       setWaStatus("error");
     }
   };
