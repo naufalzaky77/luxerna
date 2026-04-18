@@ -431,6 +431,9 @@ ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1, l
           `$pd.OriginAtMargins = $false; ` +
           `$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0); ` +
           `$pd.add_PrintPage({ param($s, $e); ` +
+          `$e.Graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; ` +
+  `$e.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality; ` +
+  `$e.Graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality; ` +
   `$ratioX = $e.PageBounds.Width / $img.Width; ` +
   `$ratioY = $e.PageBounds.Height / $img.Height; ` +
   `$ratio = [Math]::Min($ratioX, $ratioY); ` +

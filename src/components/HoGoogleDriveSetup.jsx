@@ -7,6 +7,17 @@ export default function HoGoogleDriveSetup({ settings, onSettingsChange }) {
   const [credentialsJson, setCredentialsJson] = useState("");
   const [setupStatus, setSetupStatus] = useState("idle"); // idle | loading | success | error
   const [setupMessage, setSetupMessage] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const result = await window.electronAPI.googleIsAuthenticated();
+      if (result.authenticated) {
+        setIsAuthenticated(true);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleSetupCredentials = async () => {
     if (!credentialsJson.trim()) {
@@ -63,15 +74,15 @@ export default function HoGoogleDriveSetup({ settings, onSettingsChange }) {
     <div>
       {!showSetup && (
         <button
-          onClick={() => setShowSetup(true)}
+          onClick={() => (isAuthenticated ? null : setShowSetup(true))}
           className="admin-btn"
           style={{
             width: "100%",
             padding: ".5rem",
-            background: "var(--secondary)",
+            background: isAuthenticated ? "var(--green)" : "var(--secondary)",
             border: ".2rem solid var(--secondary)",
             borderRadius: ".7rem",
-            cursor: "pointer",
+            cursor: isAuthenticated ? "default" : "pointer",
             fontFamily: "var(--f)",
             fontSize: "var(--fs-h2)",
             fontWeight: "var(--fw-semiBold)",
@@ -89,7 +100,7 @@ export default function HoGoogleDriveSetup({ settings, onSettingsChange }) {
             className="ic-white"
             style={{ width: "2rem", height: "2rem" }}
           />
-          ATUR GOOGLE DRIVE
+          {isAuthenticated ? "GOOGLE DRIVE TERHUBUNG" : "ATUR GOOGLE DRIVE"}
         </button>
       )}
 
