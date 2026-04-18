@@ -14,6 +14,8 @@ export async function renderComposite({ layout, photos, templatePreview }) {
   const canvasW = mmToPx(paper.w);
   const canvasH = mmToPx(paper.h);
 
+  
+
   const canvas = document.createElement("canvas");
   canvas.width = canvasW;
   canvas.height = canvasH;
@@ -43,8 +45,26 @@ export async function renderComposite({ layout, photos, templatePreview }) {
     }
   }
 
-  // ----- 3. Export PNG base64 ------
-  return canvas.toDataURL("image/png");
+  // ----- 3. Rotate canvas kalau portrait (untuk print) ------
+  let finalCanvas = canvas;
+  
+  if (canvas.width < canvas.height) {
+    // Rotate 90 derajat jadi landscape
+    const rotated = document.createElement("canvas");
+    rotated.width = canvas.height;
+    rotated.height = canvas.width;
+    const rCtx = rotated.getContext("2d");
+    rCtx.translate(rotated.width / 2, rotated.height / 2);
+    rCtx.rotate(-Math.PI / 2);
+    rCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+    finalCanvas = rotated;
+  }
+
+  // ----- 4. Export PNG base64 ------
+  
+  return finalCanvas.toDataURL("image/png");
+
+  
 }
 
 // ----- Rotasi foto portrait 90 derajat jadi landscape ------

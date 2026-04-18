@@ -73,6 +73,29 @@ export default function Output({
     checkLastIndex();
   }, [pathLocked]);
 
+  useEffect(() => {
+    setProcessStatus("idle");
+    setLastSavedPath(null);
+    setProcessProgress(0);
+    setProcessSteps([
+      { id: "render", label: "Render foto + frame template" },
+      { id: "save", label: "Simpan ke disk lokal" },
+      { id: "upload", label: "Upload ke cloud storage" },
+    ]);
+    setPrintStatus("idle");
+    setPrintDone(0);
+
+    if (!pathLocked || !localPath || !eventName) return;
+    const recheck = async () => {
+      const result = await window.electronAPI.getLastPhotoIndex({
+        folderPath: localPath,
+        eventName,
+      });
+      photoIndex.current = (result.lastIndex || 0) + 1;
+    };
+    recheck();
+  }, [layout.id]);
+
   // ── Run PROSES ──
   const runProcess = async () => {
     if (processStatus !== "idle") return;
@@ -86,6 +109,8 @@ export default function Output({
         prev.map((s, i) => (i === 0 ? { ...s, running: true } : s)),
       );
       const base64 = await renderComposite({ layout, photos, templatePreview });
+      const tempImg = new Image();
+      tempImg.onload = () => (tempImg.src = base64);
       setProcessSteps((prev) =>
         prev.map((s, i) =>
           i === 0 ? { ...s, done: true, running: false } : s,
@@ -172,6 +197,10 @@ export default function Output({
     if (!lastSavedPath) {
       return;
     }
+    if (selectedPrinter.status === "offline") {
+      alert("Printer offline atau tidak tersambung. Periksa koneksi printer.");
+      return;
+    }
 
     setPrintStatus("printing");
 
@@ -181,6 +210,7 @@ export default function Output({
           printerName: selectedPrinter.name,
           filePath: lastSavedPath,
           copies: printCount,
+          layoutId: layout.id,
         });
 
         if (!result.success) {

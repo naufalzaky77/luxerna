@@ -65,6 +65,7 @@ export function usePrinter({ autoDetect = true } = {}) {
         printerName: selectedPrinter.name,
         filePath,
         copies,
+        layout,
       });
 
       if (result.success) {

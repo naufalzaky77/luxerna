@@ -389,18 +389,19 @@ ipcMain.handle("printer:list", async () => {
   const { exec } = require("child_process");
   
   return new Promise((resolve) => {
-    const cmd = `powershell -NoProfile -Command "Get-WmiObject Win32_Printer -Filter \\"NOT PortName LIKE 'FILE%'\\" | Select-Object Name, PrinterStatus, @{Name='Status';Expression={switch($_.PrinterStatus){0{'ready'}1{'paused'}2{'error'}3{'deleting'}4{'paper-jam'}5{'paper-out'}6{'manual-feed'}7{'power-save'}default{'offline'}}}} | ConvertTo-Json"`;
+    const cmd = `powershell -NoProfile -Command "Get-WmiObject Win32_Printer -Filter \\"NOT PortName LIKE 'FILE%'\\" | Select-Object Name, PrinterStatus, WorkOffline, @{Name='Status';Expression={if($_.WorkOffline){'offline'}else{'ready'}}} | ConvertTo-Json"`;
     
     exec(cmd, { encoding: 'utf8' }, (error, stdout) => {
       if (error) {
         return resolve({ printers: [], error: error.message });
       }
+      
       try {
         const data = JSON.parse(stdout);
         const printerList = Array.isArray(data) ? data : (data ? [data] : []);
         const printers = printerList.map((p) => ({
           name: p.Name,
-          status: p.Status === 'ready' ? 'ready' : 'offline',
+          status: ['ready', 'idle'].includes(p.Status) ? 'ready' : 'offline',
           isDefault: false,
           rawStatus: p.Status,
         }));
@@ -412,37 +413,45 @@ ipcMain.handle("printer:list", async () => {
   });
 });
 
-ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1 }) => {
+ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1, layoutId }) => {
   try {
     const { exec } = require("child_process");
+    const cleanPath = filePath.replace(/\\/g, "\\\\");
 
     for (let i = 0; i < copies; i++) {
       await new Promise((resolve, reject) => {
+        // Semua layout sudah landscape setelah dirotasi di renderComposite
         const cmd = `powershell -NoProfile -Command "` +
           `Add-Type -AssemblyName System.Drawing; ` +
-          `Add-Type -AssemblyName System.Windows.Forms; ` +
-          `$img = [System.Drawing.Image]::FromFile('${filePath}'); ` +
+          `Add-Type -AssemblyName System.Drawing.Printing; ` +
+          `$img = [System.Drawing.Image]::FromFile('${cleanPath}'); ` +
           `$pd = New-Object System.Drawing.Printing.PrintDocument; ` +
-          `$pd.PrinterSettings.PrinterName = '${printerName}'; ` +
-          `$pd.DefaultPageSettings.Landscape = $false; ` +
-          `$pd.add_PrintPage({ ` +
-            `param($s, $e); ` +
-            `$e.Graphics.DrawImage($img, $e.MarginBounds); ` +
-          `}); ` +
+          `$pd.PrinterSettings.PrinterName = '${printerName.replace(/'/g, "''")}'; ` +
+          `$pd.DefaultPageSettings.Landscape = $true; ` +
+          `$pd.OriginAtMargins = $false; ` +
+          `$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0); ` +
+          `$pd.add_PrintPage({ param($s, $e); ` +
+  `$ratioX = $e.PageBounds.Width / $img.Width; ` +
+  `$ratioY = $e.PageBounds.Height / $img.Height; ` +
+  `$ratio = [Math]::Min($ratioX, $ratioY); ` +
+  `$newW = $img.Width * $ratio; ` +
+  `$newH = $img.Height * $ratio; ` +
+  `$posX = ($e.PageBounds.Width - $newW) / 2; ` +
+  `$posY = ($e.PageBounds.Height - $newH) / 2; ` +
+  `$rect = New-Object System.Drawing.RectangleF($posX, $posY, $newW, $newH); ` +
+  `$e.Graphics.DrawImage($img, $rect); ` +
+`}); ` +
           `$pd.Print(); ` +
           `$img.Dispose(); ` +
+          `[System.GC]::Collect(); ` +
           `$pd.Dispose()"`;
 
         exec(cmd, { timeout: 30000 }, (error) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
+          if (error) reject(error);
+          else resolve();
         });
       });
     }
-
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };
