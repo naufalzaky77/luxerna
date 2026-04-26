@@ -7,7 +7,7 @@ function mmToPx(mm) {
   return Math.round(mm * MM_TO_PX);
 }
 
-export async function renderComposite({ layout, photos, templatePreview }) {
+export async function renderComposite({ layout, photos, templatePreview, forPrint = false }) {
   const { print } = layout;
   const { paper } = print;
 
@@ -48,7 +48,7 @@ export async function renderComposite({ layout, photos, templatePreview }) {
   // ----- 3. Rotate canvas kalau portrait (untuk print) ------
   let finalCanvas = canvas;
   
-  if (canvas.width < canvas.height) {
+  if (forPrint &&canvas.width < canvas.height) {
     // Rotate 90 derajat jadi landscape
     const rotated = document.createElement("canvas");
     rotated.width = canvas.height;

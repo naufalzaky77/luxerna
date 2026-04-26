@@ -413,14 +413,19 @@ ipcMain.handle("printer:list", async () => {
   });
 });
 
-ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1, layoutId }) => {
+ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, layoutId }) => {
   try {
     const { exec } = require("child_process");
-    const cleanPath = filePath.replace(/\\/g, "\\\\");
+    
+    // Tulis base64 ke file temp
+    const tempPath = path.join(app.getPath("temp"), `print_temp_${Date.now()}.png`);
+    const base64Data = imageData.replace(/^data:image\/png;base64,/, "");
+    fs.writeFileSync(tempPath, Buffer.from(base64Data, "base64"));
+    
+    const cleanPath = tempPath.replace(/\\/g, "\\\\");
 
     for (let i = 0; i < copies; i++) {
       await new Promise((resolve, reject) => {
-        // Semua layout sudah landscape setelah dirotasi di renderComposite
         const cmd = `powershell -NoProfile -Command "` +
           `Add-Type -AssemblyName System.Drawing; ` +
           `Add-Type -AssemblyName System.Drawing.Printing; ` +
@@ -432,18 +437,18 @@ ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1, l
           `$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0); ` +
           `$pd.add_PrintPage({ param($s, $e); ` +
           `$e.Graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; ` +
-  `$e.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality; ` +
-  `$e.Graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality; ` +
-  `$ratioX = $e.PageBounds.Width / $img.Width; ` +
-  `$ratioY = $e.PageBounds.Height / $img.Height; ` +
-  `$ratio = [Math]::Min($ratioX, $ratioY); ` +
-  `$newW = $img.Width * $ratio; ` +
-  `$newH = $img.Height * $ratio; ` +
-  `$posX = ($e.PageBounds.Width - $newW) / 2; ` +
-  `$posY = ($e.PageBounds.Height - $newH) / 2; ` +
-  `$rect = New-Object System.Drawing.RectangleF($posX, $posY, $newW, $newH); ` +
-  `$e.Graphics.DrawImage($img, $rect); ` +
-`}); ` +
+          `$e.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality; ` +
+          `$e.Graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality; ` +
+          `$ratioX = $e.PageBounds.Width / $img.Width; ` +
+          `$ratioY = $e.PageBounds.Height / $img.Height; ` +
+          `$ratio = [Math]::Min($ratioX, $ratioY); ` +
+          `$newW = $img.Width * $ratio; ` +
+          `$newH = $img.Height * $ratio; ` +
+          `$posX = ($e.PageBounds.Width - $newW) / 2; ` +
+          `$posY = ($e.PageBounds.Height - $newH) / 2; ` +
+          `$rect = New-Object System.Drawing.RectangleF($posX, $posY, $newW, $newH); ` +
+          `$e.Graphics.DrawImage($img, $rect); ` +
+          `}); ` +
           `$pd.Print(); ` +
           `$img.Dispose(); ` +
           `[System.GC]::Collect(); ` +
@@ -455,6 +460,10 @@ ipcMain.handle("printer:print", async (_, { printerName, filePath, copies = 1, l
         });
       });
     }
+
+    // Hapus file temp setelah selesai
+    try { fs.unlinkSync(tempPath); } catch {}
+
     return { success: true };
   } catch (err) {
     return { success: false, error: err.message };

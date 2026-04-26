@@ -3,7 +3,11 @@
 export default function CompositePreview({ photos, layout, templatePreview }) {
   const { print } = layout;
   const { paper } = print;
-  const ratio = `${paper.w} / ${paper.h}`;
+  const ratio = paper.w / paper.h;
+
+   const PREVIEW_MAX = 280;
+  const W = ratio >= 1 ? PREVIEW_MAX : Math.round(PREVIEW_MAX * ratio);
+  const H = ratio >= 1 ? Math.round(PREVIEW_MAX / ratio) : PREVIEW_MAX;
 
   const renderPhotos = () => {
     // ------- LAYOUT CUSTOM 4 GRID ------- //
@@ -91,15 +95,18 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
   };
 
   return (
-    <div
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <div
       style={{
-        width: "100%",
-        aspectRatio: ratio,
-        borderRadius: "10px",
+        width: W,
+        height: H,
+        // aspectRatio: ratio,
+        // borderRadius: "10px",
         overflow: "hidden",
         background: "white",
         position: "relative",
         boxShadow: "0 12px 40px rgba(0,0,0,.6)",
+        flexShrink: 0,
       }}
     >
       {/* LAYER 0 - FRAME TEMPLATE */}
@@ -123,6 +130,7 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
       <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
         {renderPhotos()}
       </div>
+    </div>
     </div>
   );
 }

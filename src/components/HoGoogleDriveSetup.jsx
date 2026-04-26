@@ -1,5 +1,5 @@
 // Setup Google Drive component untuk Home screen
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import getAsset from "../utils/getAsset";
 
 export default function HoGoogleDriveSetup({ settings, onSettingsChange }) {

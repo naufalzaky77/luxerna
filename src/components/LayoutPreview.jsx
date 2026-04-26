@@ -110,25 +110,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
         flexShrink: 0,
       }}
     >
-      {/* LAYER 0 - Frame Template (di paling belakang) */}
-      {templatePreview && (
-        <img
-          src={templatePreview}
-          style={{
-            position: "absolute",
-            left: -(FW - W) / 2,
-            top: -(FH - H) / 2,
-            width: FW,
-            height: FH,
-            objectFit: "fill",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-          alt="template"
-        />
-      )}
-
-      {/* LAYER 1 - Kertas Putih (di depan frame) */}
+      {/* LAYER 0 - Kertas Putih (di belakang frame) */}
       <div
         style={{
           position: "absolute",
@@ -139,6 +121,26 @@ export default function LayoutPreview({ layout, templatePreview }) {
           overflow: "hidden",
         }}
       >
+      {/* LAYER 1 - Frame Template (di belakang foto) */}
+      {templatePreview && (
+        <img
+          src={templatePreview}
+          style={{
+            position: "absolute",
+            inset: 0,
+            // left: -(FW - W) / 2,
+            // top: -(FH - H) / 2,
+            width: "100%",
+            height: "100%",
+            objectFit: "fill",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+          alt="template"
+        />
+      )}
+
+      
         {/* LAYER 2 - Hitam Area Foto (paling depan) */}
         <div style={{ position: "relative", zIndex: 2 }}>{renderCells()}</div>
       </div>

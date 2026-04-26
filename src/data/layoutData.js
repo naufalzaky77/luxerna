@@ -78,7 +78,7 @@ export const LAYOUTS = [
   print: {
     paper: { w: 51, h: 152 },
     photo: { w: 41, h: 26.563 },
-    margin: { top: 31.155, bottom: 31.155, left: 5, right: 5 },
+    margin: { top: 15, bottom: 47.311, left: 5, right: 5 },
     cols: 1,
     rows: 3,
     gap: { x: 0, y: 5 },
@@ -134,7 +134,7 @@ export const LAYOUTS = [
   print: {
     paper: { w: 51, h: 152 },
     photo: { w: 41, h: 26.563 },
-    margin: { top: 15.373, bottom: 15.374, left: 5, right: 5 },
+    margin: { top: 5, bottom: 25.747, left: 5, right: 5 },
     cols: 1,
     rows: 4,
     gap: { x: 0, y: 5 },

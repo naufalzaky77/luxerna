@@ -191,12 +191,8 @@ export default function Output({
 
   // ── Run CETAK (cuma foto tanpa frame) ──
   const runPrint = async () => {
-    if (!processDone || !selectedPrinter || printStatus !== "idle") {
-      return;
-    }
-    if (!lastSavedPath) {
-      return;
-    }
+    if (!processDone || !selectedPrinter || printStatus !== "idle") return;
+    if (!lastSavedPath) return;
     if (selectedPrinter.status === "offline") {
       alert("Printer offline atau tidak tersambung. Periksa koneksi printer.");
       return;
@@ -205,28 +201,27 @@ export default function Output({
     setPrintStatus("printing");
 
     try {
+      // Render ulang khusus print (dengan rotasi landscape)
+      const printBase64 = await renderComposite({
+        layout,
+        photos,
+        templatePreview,
+        forPrint: true,
+      });
+
       if (window.electronAPI && window.electronAPI.printPhoto) {
         const result = await window.electronAPI.printPhoto({
           printerName: selectedPrinter.name,
-          filePath: lastSavedPath,
+          imageData: printBase64, // ← base64, bukan filePath
           copies: printCount,
           layoutId: layout.id,
         });
 
-        if (!result.success) {
-          throw new Error(result.error || "Print gagal");
-        }
-
+        if (!result.success) throw new Error(result.error || "Print gagal");
         setPrintDone((prev) => prev + printCount);
-      } else {
-        // fallback for non-electron environment (development web)
-        for (let i = 0; i < printCount; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 2200));
-          setPrintDone((prev) => prev + 1);
-        }
       }
     } catch (err) {
-      // Print error ignored silently
+      // error handling
     } finally {
       setPrintStatus("idle");
     }
