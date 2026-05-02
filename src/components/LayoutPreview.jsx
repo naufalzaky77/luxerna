@@ -1,17 +1,17 @@
 export default function LayoutPreview({ layout, templatePreview }) {
   const gap = 3;
   const PREVIEW_MAX = 220;
-  const { w, h } = layout.print.paper;
+  const { w, h } = layout.display.paper;
   const ratio = w / h;
   const W = ratio >= 1 ? PREVIEW_MAX : Math.round(PREVIEW_MAX * ratio);
   const H = ratio >= 1 ? Math.round(PREVIEW_MAX / ratio) : PREVIEW_MAX;
 
   const renderCells = () => {
-    const { print, shots } = layout;
+    const { display } = layout;
 
     // ------- LAYOUT SLOT 4 GRID ------- //
-    if (print.slots) {
-      const { slots, paper } = print;
+    if (display.slots) {
+      const { slots, paper } = display;
       const scaleX = W / paper.w;
       const scaleY = H / paper.h;
       return (
@@ -48,7 +48,7 @@ export default function LayoutPreview({ layout, templatePreview }) {
     }
 
     // ------- LAYOUT GRID/STRIP (COL X ROW) ------- //
-    const { cols, rows, photo } = print;
+    const { cols, rows, photo } = display;
     const cellW = (W - gap * (cols + 1)) / cols;
     const cellH = cellW * (photo.h / photo.w);
     return (
@@ -121,26 +121,25 @@ export default function LayoutPreview({ layout, templatePreview }) {
           overflow: "hidden",
         }}
       >
-      {/* LAYER 1 - Frame Template (di belakang foto) */}
-      {templatePreview && (
-        <img
-          src={templatePreview}
-          style={{
-            position: "absolute",
-            inset: 0,
-            // left: -(FW - W) / 2,
-            // top: -(FH - H) / 2,
-            width: "100%",
-            height: "100%",
-            objectFit: "fill",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-          alt="template"
-        />
-      )}
+        {/* LAYER 1 - Frame Template (di belakang foto) */}
+        {templatePreview && (
+          <img
+            src={templatePreview}
+            style={{
+              position: "absolute",
+              inset: 0,
+              // left: -(FW - W) / 2,
+              // top: -(FH - H) / 2,
+              width: "100%",
+              height: "100%",
+              objectFit: "fill",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+            alt="template"
+          />
+        )}
 
-      
         {/* LAYER 2 - Hitam Area Foto (paling depan) */}
         <div style={{ position: "relative", zIndex: 2 }}>{renderCells()}</div>
       </div>

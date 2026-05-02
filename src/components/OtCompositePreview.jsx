@@ -1,22 +1,22 @@
 // BAGIAN OUTPUT FRAME + FOTO DI KIRI
 
 export default function CompositePreview({ photos, layout, templatePreview }) {
-  const { print } = layout;
-  const { paper } = print;
+  const { display } = layout;
+  const { paper } = display;
   const ratio = paper.w / paper.h;
 
-   const PREVIEW_MAX = 280;
+  const PREVIEW_MAX = 280;
   const W = ratio >= 1 ? PREVIEW_MAX : Math.round(PREVIEW_MAX * ratio);
   const H = ratio >= 1 ? Math.round(PREVIEW_MAX / ratio) : PREVIEW_MAX;
 
   const renderPhotos = () => {
     // ------- LAYOUT CUSTOM 4 GRID ------- //
-    if (print.slots) {
+    if (display.slots) {
       const scaleX = 100 / paper.w;
       const scaleY = 100 / paper.h;
       return (
         <div style={{ position: "absolute", inset: 0 }}>
-          {print.slots.map((s, i) => (
+          {display.slots.map((s, i) => (
             <div
               key={i}
               style={{
@@ -43,7 +43,7 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
     }
 
     // ------- LAYOUT REGULER (COL X ROW) ------- //
-    const { cols, rows, photo, margin, gap } = print;
+    const { cols, rows, photo, margin, gap } = display;
     const scaleX = 100 / paper.w;
     const scaleY = 100 / paper.h;
     const slotW = photo.w * scaleX;
@@ -97,40 +97,40 @@ export default function CompositePreview({ photos, layout, templatePreview }) {
   return (
     <div style={{ display: "flex", justifyContent: "center" }}>
       <div
-      style={{
-        width: W,
-        height: H,
-        // aspectRatio: ratio,
-        // borderRadius: "10px",
-        overflow: "hidden",
-        background: "white",
-        position: "relative",
-        boxShadow: "0 12px 40px rgba(0,0,0,.6)",
-        flexShrink: 0,
-      }}
-    >
-      {/* LAYER 0 - FRAME TEMPLATE */}
-      {templatePreview && (
-        <img
-          src={templatePreview}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "fill",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-          alt=""
-        />
-      )}
+        style={{
+          width: W,
+          height: H,
+          // aspectRatio: ratio,
+          // borderRadius: "10px",
+          overflow: "hidden",
+          background: "white",
+          position: "relative",
+          boxShadow: "0 12px 40px rgba(0,0,0,.6)",
+          flexShrink: 0,
+        }}
+      >
+        {/* LAYER 0 - FRAME TEMPLATE */}
+        {templatePreview && (
+          <img
+            src={templatePreview}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "fill",
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+            alt=""
+          />
+        )}
 
-      {/* LAYER 1 - FOTO AREA */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
-        {renderPhotos()}
+        {/* LAYER 1 - FOTO AREA */}
+        <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
+          {renderPhotos()}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

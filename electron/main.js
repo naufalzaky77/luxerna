@@ -416,43 +416,52 @@ ipcMain.handle("printer:list", async () => {
 ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, layoutId }) => {
   try {
     const { exec } = require("child_process");
-    
-    // Tulis base64 ke file temp
+
     const tempPath = path.join(app.getPath("temp"), `print_temp_${Date.now()}.png`);
     const base64Data = imageData.replace(/^data:image\/png;base64,/, "");
     fs.writeFileSync(tempPath, Buffer.from(base64Data, "base64"));
-    
+
     const cleanPath = tempPath.replace(/\\/g, "\\\\");
+    const isStripPortrait = ["3strip", "4strip"].includes(layoutId);
+
 
     for (let i = 0; i < copies; i++) {
       await new Promise((resolve, reject) => {
         const cmd = `powershell -NoProfile -Command "` +
-          `Add-Type -AssemblyName System.Drawing; ` +
-          `Add-Type -AssemblyName System.Drawing.Printing; ` +
-          `$img = [System.Drawing.Image]::FromFile('${cleanPath}'); ` +
-          `$pd = New-Object System.Drawing.Printing.PrintDocument; ` +
-          `$pd.PrinterSettings.PrinterName = '${printerName.replace(/'/g, "''")}'; ` +
-          `$pd.DefaultPageSettings.Landscape = $true; ` +
-          `$pd.OriginAtMargins = $false; ` +
-          `$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0); ` +
-          `$pd.add_PrintPage({ param($s, $e); ` +
-          `$e.Graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; ` +
-          `$e.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality; ` +
-          `$e.Graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality; ` +
-          `$ratioX = $e.PageBounds.Width / $img.Width; ` +
-          `$ratioY = $e.PageBounds.Height / $img.Height; ` +
-          `$ratio = [Math]::Min($ratioX, $ratioY); ` +
-          `$newW = $img.Width * $ratio; ` +
-          `$newH = $img.Height * $ratio; ` +
-          `$posX = ($e.PageBounds.Width - $newW) / 2; ` +
-          `$posY = ($e.PageBounds.Height - $newH) / 2; ` +
-          `$rect = New-Object System.Drawing.RectangleF($posX, $posY, $newW, $newH); ` +
-          `$e.Graphics.DrawImage($img, $rect); ` +
-          `}); ` +
-          `$pd.Print(); ` +
-          `$img.Dispose(); ` +
-          `[System.GC]::Collect(); ` +
-          `$pd.Dispose()"`;
+  `Add-Type -AssemblyName System.Drawing; ` +
+  `Add-Type -AssemblyName System.Drawing.Printing; ` +
+  `$img = [System.Drawing.Image]::FromFile('${cleanPath}'); ` +
+  `$pd = New-Object System.Drawing.Printing.PrintDocument; ` +
+  `$pd.PrinterSettings.PrinterName = '${printerName.replace(/'/g, "''")}'; ` +
+  `$pd.DefaultPageSettings.Landscape = ${isStripPortrait ? "$false" : "$true"}; ` +
+  `$pd.OriginAtMargins = $false; ` +
+  `$pd.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0); ` +
+  `$pd.add_PrintPage({ param($s, $e); ` +
+  `$e.Graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; ` +
+  `$e.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality; ` +
+  `$e.Graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality; ` +
+  `$pb = $e.PageBounds; ` +
+  (isStripPortrait
+    // Strip portrait: canvas 602x1795, PageBounds portrait 400x600, scale by height
+    ? `$scale = [float]$pb.Height / [float]$img.Height; ` +
+      `$newW = [float]$img.Width * $scale; ` +
+      `$newH = [float]$img.Height * $scale; ` +
+      `$posX = ([float]$pb.Width - $newW) / 2.0; ` +
+      `$rect = New-Object System.Drawing.RectangleF($posX, 0, $newW, $newH); ` +
+      `$e.Graphics.DrawImage($img, $rect); `
+    // 4R full + 3roll landscape: scale by width
+    : `$scale = [float]$pb.Width / [float]$img.Width; ` +
+      `$newW = [float]$img.Width * $scale; ` +
+      `$newH = [float]$img.Height * $scale; ` +
+      `$posY = ([float]$pb.Height - $newH) / 2.0; ` +
+      `$rect = New-Object System.Drawing.RectangleF(0, $posY, $newW, $newH); ` +
+      `$e.Graphics.DrawImage($img, $rect); `
+  ) +
+  `}); ` +
+  `$pd.Print(); ` +
+  `$img.Dispose(); ` +
+  `[System.GC]::Collect(); ` +
+  `$pd.Dispose()"`;
 
         exec(cmd, { timeout: 30000 }, (error) => {
           if (error) reject(error);
@@ -461,7 +470,6 @@ ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, 
       });
     }
 
-    // Hapus file temp setelah selesai
     try { fs.unlinkSync(tempPath); } catch {}
 
     return { success: true };

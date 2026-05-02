@@ -1,27 +1,23 @@
 // BAGIAN RENDER FOTO + FRAME KE PNG
 
-const DPI = 300;
-const MM_TO_PX = DPI / 25.4;
+const PRINT_DPI = 300;
+const MM_TO_PX = PRINT_DPI / 25.4;
 
 function mmToPx(mm) {
   return Math.round(mm * MM_TO_PX);
 }
 
 export async function renderComposite({ layout, photos, templatePreview, forPrint = false }) {
-  const { print } = layout;
-  const { paper } = print;
+  const spec = forPrint ? layout.print : layout.display;
 
-  const canvasW = mmToPx(paper.w);
-  const canvasH = mmToPx(paper.h);
-
-  
+  const canvasW = mmToPx(spec.paper.w);
+  const canvasH = mmToPx(spec.paper.h);
 
   const canvas = document.createElement("canvas");
   canvas.width = canvasW;
   canvas.height = canvasH;
   const ctx = canvas.getContext("2d");
 
-  
   // ----- 1. Frame overlay ------
   if (templatePreview) {
     const frame = await loadImage(templatePreview);
@@ -29,14 +25,13 @@ export async function renderComposite({ layout, photos, templatePreview, forPrin
   }
 
   // ----- 2. Gambar Foto ke Slot ------
-  const slots = getSlots(print, canvasW, canvasH);
+  const slots = getSlots(spec, true);
 
   for (let i = 0; i < slots.length; i++) {
     const s = slots[i];
     if (!photos[i]) continue;
     const img = await loadImage(photos[i]);
 
-    // ✅ rotate kalau foto portrait (dari webcam)
     if (img.width < img.height) {
       await drawRotated(ctx, img, s);
     } else {
@@ -46,25 +41,24 @@ export async function renderComposite({ layout, photos, templatePreview, forPrin
   }
 
   // ----- 3. Rotate canvas kalau portrait (untuk print) ------
-  let finalCanvas = canvas;
-  
-  if (forPrint &&canvas.width < canvas.height) {
-    // Rotate 90 derajat jadi landscape
-    const rotated = document.createElement("canvas");
-    rotated.width = canvas.height;
-    rotated.height = canvas.width;
-    const rCtx = rotated.getContext("2d");
-    rCtx.translate(rotated.width / 2, rotated.height / 2);
-    rCtx.rotate(-Math.PI / 2);
-    rCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
-    finalCanvas = rotated;
-  }
+let finalCanvas = canvas;
 
-  // ----- 4. Export PNG base64 ------
-  
-  return finalCanvas.toDataURL("image/png");
+const isStripLayout = layout.id && ["3strip", "4strip"].includes(layout.id);
 
-  
+// Strip portrait jangan dirotate — kirim apa adanya ke printer
+// Layout landscape lain (1full, 2full, 4grid, 3roll) tetap dirotate
+if (forPrint && canvas.width < canvas.height && !isStripLayout) {
+  const rotated = document.createElement("canvas");
+  rotated.width = canvas.height;
+  rotated.height = canvas.width;
+  const rCtx = rotated.getContext("2d");
+  rCtx.translate(rotated.width / 2, rotated.height / 2);
+  rCtx.rotate(-Math.PI / 2);
+  rCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+  finalCanvas = rotated;
+}
+
+return finalCanvas.toDataURL("image/png");
 }
 
 // ----- Rotasi foto portrait 90 derajat jadi landscape ------
@@ -83,23 +77,25 @@ async function drawRotated(ctx, img, s) {
 }
 
 // ----- Posisi Slot dalam Pixel ------
-function getSlots(print, canvasW, canvasH) {
-  if (print.slots) {
-    return print.slots.map((s) => ({
-      x: mmToPx(s.x),
-      y: mmToPx(s.y),
-      w: mmToPx(s.w),
-      h: mmToPx(s.h),
+function getSlots(spec, isPrint = false) {
+  const toUnit = isPrint ? mmToPx : (v) => Math.round(v);
+
+  if (spec.slots) {
+    return spec.slots.map((s) => ({
+      x: toUnit(s.x),
+      y: toUnit(s.y),
+      w: toUnit(s.w),
+      h: toUnit(s.h),
     }));
   }
 
-  const { cols, rows, photo, margin, gap } = print;
-  const slotW = mmToPx(photo.w);
-  const slotH = mmToPx(photo.h);
-  const gapX = mmToPx(gap.x);
-  const gapY = mmToPx(gap.y);
-  const marginL = mmToPx(margin.left);
-  const marginT = mmToPx(margin.top);
+  const { cols, rows, photo, margin, gap } = spec;
+  const slotW   = toUnit(photo.w);
+  const slotH   = toUnit(photo.h);
+  const gapX    = toUnit(gap.x);
+  const gapY    = toUnit(gap.y);
+  const marginL = toUnit(margin.left);
+  const marginT = toUnit(margin.top);
 
   const slots = [];
   for (let r = 0; r < rows; r++) {
@@ -113,19 +109,6 @@ function getSlots(print, canvasW, canvasH) {
     }
   }
   return slots;
-}
-
-// ----- Load Image dari URL/base64 ------
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = (err) => {
-      console.error("loadImage FAILED:", src?.substring(0, 50));
-      reject(err);
-    };
-    img.src = src;
-  });
 }
 
 // ----- Cover Crop ------
@@ -145,4 +128,17 @@ function coverCrop(imgW, imgH, targetW, targetH) {
     sy = (imgH - sh) / 2;
   }
   return { sx, sy, sw, sh };
+}
+
+// ----- Load Image dari URL/base64 ------
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = (err) => {
+      console.error("loadImage FAILED:", src?.substring(0, 50));
+      reject(err);
+    };
+    img.src = src;
+  });
 }

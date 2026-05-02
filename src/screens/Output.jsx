@@ -108,7 +108,12 @@ export default function Output({
       setProcessSteps((prev) =>
         prev.map((s, i) => (i === 0 ? { ...s, running: true } : s)),
       );
-      const base64 = await renderComposite({ layout, photos, templatePreview });
+      const base64 = await renderComposite({
+        layout,
+        photos,
+        templatePreview,
+        forPrint: false,
+      });
       const tempImg = new Image();
       tempImg.onload = () => (tempImg.src = base64);
       setProcessSteps((prev) =>

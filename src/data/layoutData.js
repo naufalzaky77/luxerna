@@ -18,10 +18,18 @@ export const LAYOUTS = [
         </svg>
       </div>
     ),
-  print: {
+  display: {
     paper: { w: 152, h: 102 },
     photo: { w: 142, h: 92 },
     margin: { top: 5, bottom: 5, left: 5, right: 5 },
+    cols: 1,
+    rows: 1,
+    gap: { x: 0, y: 0 },
+  },
+  print: {
+    paper: { w: 158, h: 108 },
+    photo: { w: 142, h: 92 },
+    margin: { top: 6, bottom: 8, left: 7, right: 8 },
     cols: 1,
     rows: 1,
     gap: { x: 0, y: 0 },
@@ -47,10 +55,18 @@ export const LAYOUTS = [
         </svg>
       </div> 
     ),
-  print: {
+  display: {
     paper: { w: 102, h: 152 },
     photo: { w: 92, h: 59.606 },
     margin: { top: 13.894, bottom: 13.894, left: 5, right: 5 },
+    cols: 1,
+    rows: 2,
+    gap: { x: 0, y: 5 },
+  },
+  print: {
+    paper: { w: 108, h: 158 },
+    photo: { w: 92, h: 59.606 },
+    margin: { top: 15.894, bottom: 16.894, left: 10, right: 8 },
     cols: 1,
     rows: 2,
     gap: { x: 0, y: 5 },
@@ -75,10 +91,18 @@ export const LAYOUTS = [
         </svg>
       </div>
     ),
-  print: {
+  display: {
     paper: { w: 51, h: 152 },
     photo: { w: 41, h: 26.563 },
     margin: { top: 15, bottom: 47.311, left: 5, right: 5 },
+    cols: 1,
+    rows: 3,
+    gap: { x: 0, y: 5 },
+  },
+  print: {
+    paper: { w: 57, h: 158 },
+    photo: { w: 41, h: 26.563 },
+    margin: { top: 18, bottom: 50.311, left: 4.25, right: 8 },
     cols: 1,
     rows: 3,
     gap: { x: 0, y: 5 },
@@ -103,10 +127,18 @@ export const LAYOUTS = [
     </svg>
   </div>
 ),
-  print: {
+  display: {
     paper: { w: 152, h: 51 },
     photo: { w: 41, h: 26.563 },
     margin: { top: 12.218, bottom: 12.219, left: 7, right: 7 },
+    cols: 3,
+    rows: 1,
+    gap: { x: 7.5, y: 0 },
+  },
+  print: {
+    paper: { w: 158, h: 57 },
+    photo: { w: 41, h: 26.563 },
+    margin: { top: 15.218, bottom: 15.219, left: 9, right: 10 },
     cols: 3,
     rows: 1,
     gap: { x: 7.5, y: 0 },
@@ -131,15 +163,25 @@ export const LAYOUTS = [
       </svg>
     </div>
   ),
-  print: {
+  display: {
     paper: { w: 51, h: 152 },
     photo: { w: 41, h: 26.563 },
     margin: { top: 5, bottom: 25.747, left: 5, right: 5 },
     cols: 1,
     rows: 4,
     gap: { x: 0, y: 5 },
-  }
+  },
+  print: {
+  paper: { w: 57, h: 158 },
+  photo: { w: 41, h: 26.563 },
+  margin: { top: 6, bottom: 28.747, left: 8.5, right: 8 },
+  cols: 1,
+  rows: 4,
+  gap: { x: 0, y: 5 },
 },
+},
+
+
 
 //--- 4 FOTO GRID LANDSCAPE ---//
 {
@@ -162,7 +204,7 @@ export const LAYOUTS = [
       </svg>
     </div>
   ),
-  print: {
+  display: {
     paper: { w: 152, h: 102 },
     margin: { top: 5, bottom: 5, left: 5, right: 5 },
     gap: { x: 9.5, y: 5 },
@@ -173,6 +215,19 @@ export const LAYOUTS = [
       { x: 5, y: 5 + 60.438 + 5, w: 41, h: 26.563 },
       { x: 5 + 41 + 9.5, y: 5 + 60.438 + 5, w: 41, h: 26.563 },
       { x: 5 + (41 + 9.5) * 2, y: 5 + 60.438 + 5, w: 41, h: 26.563 },
+    ]
+  },
+  print: {
+    paper: { w: 158, h: 108 },
+    margin: { top: 6.5, bottom: 8, left: 7.5, right: 8 },
+    gap: { x: 9.5, y: 5 },
+    slots: [
+      //1 foto besar//
+      { x: 7.5, y: 6.5, w: 93.285, h: 60.438 },
+      //3 foto kecil//
+      { x: 7.5, y: 6.5 + 60.438 + 5, w: 41, h: 26.563 },
+      { x: 7.5 + 41 + 9.5, y: 6.5 + 60.438 + 5, w: 41, h: 26.563 },
+      { x: 7.5 + (41 + 9.5) * 2, y: 6.5 + 60.438 + 5, w: 41, h: 26.563 },
     ]
   }
 },
