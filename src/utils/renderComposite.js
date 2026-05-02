@@ -40,6 +40,14 @@ export async function renderComposite({ layout, photos, templatePreview, forPrin
     }
   }
 
+  // ----- 2.5 Sharpen canvas (hanya untuk print) ------
+if (forPrint) {
+  const sharpened = sharpenCanvas(canvas, ctx);
+  // Gambar hasil sharpen kembali ke canvas asli
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  ctx.drawImage(sharpened, 0, 0);
+}
+
   // ----- 3. Rotate canvas kalau portrait (untuk print) ------
 let finalCanvas = canvas;
 
@@ -58,6 +66,10 @@ if (forPrint && canvas.width < canvas.height && !isStripLayout) {
   finalCanvas = rotated;
 }
 
+const result = finalCanvas.toDataURL("image/png");
+console.log("renderComposite result length:", result?.length);
+console.log("renderComposite result prefix:", result?.substring(0, 50));
+return result;
 return finalCanvas.toDataURL("image/png");
 }
 
@@ -141,4 +153,57 @@ function loadImage(src) {
     };
     img.src = src;
   });
+}
+
+// ----- Sharpen menggunakan convolution kernel ------
+function sharpenCanvas(sourceCanvas, srcCtx) { // ← terima ctx dari luar
+  const w = sourceCanvas.width;
+  const h = sourceCanvas.height;
+
+  const dst = document.createElement("canvas");
+  dst.width = w;
+  dst.height = h;
+  const dstCtx = dst.getContext("2d", { willReadFrequently: true });
+
+  // Pakai srcCtx yang sudah ada, bukan buat baru
+  const srcData = srcCtx.getImageData(0, 0, w, h);
+  const dstData = dstCtx.createImageData(w, h);
+
+  const src = srcData.data;
+  const out = dstData.data;
+
+  const kernel = [
+     0, -1,  0,
+    -1,  5, -1,
+     0, -1,  0,
+  ];
+  const kernelSize = 3;
+  const half = Math.floor(kernelSize / 2);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let r = 0, g = 0, b = 0;
+
+      for (let ky = 0; ky < kernelSize; ky++) {
+        for (let kx = 0; kx < kernelSize; kx++) {
+          const px = Math.min(w - 1, Math.max(0, x + kx - half));
+          const py = Math.min(h - 1, Math.max(0, y + ky - half));
+          const idx = (py * w + px) * 4;
+          const weight = kernel[ky * kernelSize + kx];
+          r += src[idx]     * weight;
+          g += src[idx + 1] * weight;
+          b += src[idx + 2] * weight;
+        }
+      }
+
+      const i = (y * w + x) * 4;
+      out[i]     = Math.min(255, Math.max(0, r));
+      out[i + 1] = Math.min(255, Math.max(0, g));
+      out[i + 2] = Math.min(255, Math.max(0, b));
+      out[i + 3] = src[i + 3];
+    }
+  }
+
+  dstCtx.putImageData(dstData, 0, 0);
+  return dst;
 }

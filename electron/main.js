@@ -420,6 +420,9 @@ ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, 
     const tempPath = path.join(app.getPath("temp"), `print_temp_${Date.now()}.png`);
     const base64Data = imageData.replace(/^data:image\/png;base64,/, "");
     fs.writeFileSync(tempPath, Buffer.from(base64Data, "base64"));
+    console.log("File size written:", fs.statSync(tempPath).size, "bytes");
+console.log("File path:", tempPath);
+console.log("File exists:", fs.existsSync(tempPath));
 
     const cleanPath = tempPath.replace(/\\/g, "\\\\");
     const isStripPortrait = ["3strip", "4strip"].includes(layoutId);
@@ -427,9 +430,9 @@ ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, 
 
     for (let i = 0; i < copies; i++) {
       await new Promise((resolve, reject) => {
-        const cmd = `powershell -NoProfile -Command "` +
+       const cmd = `powershell -NoProfile -Command "` +
   `Add-Type -AssemblyName System.Drawing; ` +
-  `Add-Type -AssemblyName System.Drawing.Printing; ` +
+  // ← hapus System.Drawing.Printing, tidak dibutuhkan
   `$img = [System.Drawing.Image]::FromFile('${cleanPath}'); ` +
   `$pd = New-Object System.Drawing.Printing.PrintDocument; ` +
   `$pd.PrinterSettings.PrinterName = '${printerName.replace(/'/g, "''")}'; ` +
@@ -440,22 +443,28 @@ ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, 
   `$e.Graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; ` +
   `$e.Graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality; ` +
   `$e.Graphics.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality; ` +
+  `$cm = New-Object System.Drawing.Imaging.ColorMatrix; ` +
+  `$cm.Matrix00 = 1.1; $cm.Matrix11 = 1.1; $cm.Matrix22 = 1.1; ` +
+  `$cm.Matrix33 = 1.0; $cm.Matrix44 = 1.0; ` +
+  `$cm.Matrix40 = 0.05; $cm.Matrix41 = 0.05; $cm.Matrix42 = 0.05; ` +
+  `$ia = New-Object System.Drawing.Imaging.ImageAttributes; ` +
+  `$ia.SetColorMatrix($cm); ` +
   `$pb = $e.PageBounds; ` +
   (isStripPortrait
-    // Strip portrait: canvas 602x1795, PageBounds portrait 400x600, scale by height
     ? `$scale = [float]$pb.Height / [float]$img.Height; ` +
-      `$newW = [float]$img.Width * $scale; ` +
-      `$newH = [float]$img.Height * $scale; ` +
-      `$posX = ([float]$pb.Width - $newW) / 2.0; ` +
-      `$rect = New-Object System.Drawing.RectangleF($posX, 0, $newW, $newH); ` +
-      `$e.Graphics.DrawImage($img, $rect); `
-    // 4R full + 3roll landscape: scale by width
+      `$newW = [int]([float]$img.Width * $scale); ` +
+      `$newH = [int]([float]$img.Height * $scale); ` +
+      `$posX = [int](([float]$pb.Width - $newW) / 2.0); ` +
+      // ← Rectangle (integer) bukan RectangleF
+      `$destRect = New-Object System.Drawing.Rectangle($posX, 0, $newW, $newH); ` +
+`$e.Graphics.DrawImage($img, $destRect, 0, 0, $img.Width, $img.Height, [System.Drawing.GraphicsUnit]::Pixel, $ia); `
+
     : `$scale = [float]$pb.Width / [float]$img.Width; ` +
-      `$newW = [float]$img.Width * $scale; ` +
-      `$newH = [float]$img.Height * $scale; ` +
-      `$posY = ([float]$pb.Height - $newH) / 2.0; ` +
-      `$rect = New-Object System.Drawing.RectangleF(0, $posY, $newW, $newH); ` +
-      `$e.Graphics.DrawImage($img, $rect); `
+      `$newW = [int]([float]$img.Width * $scale); ` +
+      `$newH = [int]([float]$img.Height * $scale); ` +
+      `$posY = [int](([float]$pb.Height - $newH) / 2.0); ` +
+     `$destRect = New-Object System.Drawing.Rectangle(0, $posY, $newW, $newH); ` +
+`$e.Graphics.DrawImage($img, $destRect, 0, 0, $img.Width, $img.Height, [System.Drawing.GraphicsUnit]::Pixel, $ia); `
   ) +
   `}); ` +
   `$pd.Print(); ` +
@@ -463,10 +472,13 @@ ipcMain.handle("printer:print", async (_, { printerName, imageData, copies = 1, 
   `[System.GC]::Collect(); ` +
   `$pd.Dispose()"`;
 
-        exec(cmd, { timeout: 30000 }, (error) => {
-          if (error) reject(error);
-          else resolve();
-        });
+        exec(cmd, { timeout: 30000 }, (error, stdout, stderr) => {
+  console.log("PRINT stdout:", stdout);
+  console.log("PRINT stderr:", stderr);  // ← ini yang penting
+  console.log("PRINT error:", error);
+  if (error) reject(error);
+  else resolve();
+});
       });
     }
 

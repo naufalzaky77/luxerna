@@ -29,7 +29,7 @@ export const LAYOUTS = [
   print: {
     paper: { w: 158, h: 108 },
     photo: { w: 142, h: 92 },
-    margin: { top: 6, bottom: 8, left: 7, right: 8 },
+    margin: { top: 7, bottom: 8, left: 7, right: 8 },
     cols: 1,
     rows: 1,
     gap: { x: 0, y: 0 },
@@ -66,7 +66,7 @@ export const LAYOUTS = [
   print: {
     paper: { w: 108, h: 158 },
     photo: { w: 92, h: 59.606 },
-    margin: { top: 15.894, bottom: 16.894, left: 10, right: 8 },
+    margin: { top: 15.894, bottom: 16.894, left: 8.5, right: 8 },
     cols: 1,
     rows: 2,
     gap: { x: 0, y: 5 },
@@ -102,7 +102,7 @@ export const LAYOUTS = [
   print: {
     paper: { w: 57, h: 158 },
     photo: { w: 41, h: 26.563 },
-    margin: { top: 18, bottom: 50.311, left: 4.25, right: 8 },
+    margin: { top: 18, bottom: 50.311, left: 7.5, right: 7.5 },
     cols: 1,
     rows: 3,
     gap: { x: 0, y: 5 },
@@ -174,7 +174,7 @@ export const LAYOUTS = [
   print: {
   paper: { w: 57, h: 158 },
   photo: { w: 41, h: 26.563 },
-  margin: { top: 6, bottom: 28.747, left: 8.5, right: 8 },
+  margin: { top: 7, bottom: 27.247, left: 8.25, right: 7.5 },
   cols: 1,
   rows: 4,
   gap: { x: 0, y: 5 },
@@ -219,15 +219,15 @@ export const LAYOUTS = [
   },
   print: {
     paper: { w: 158, h: 108 },
-    margin: { top: 6.5, bottom: 8, left: 7.5, right: 8 },
+    margin: { top: 8, bottom: 8, left: 7.5, right: 8 },
     gap: { x: 9.5, y: 5 },
     slots: [
       //1 foto besar//
-      { x: 7.5, y: 6.5, w: 93.285, h: 60.438 },
+      { x: 7.5, y: 8, w: 93.285, h: 60.438 },
       //3 foto kecil//
-      { x: 7.5, y: 6.5 + 60.438 + 5, w: 41, h: 26.563 },
-      { x: 7.5 + 41 + 9.5, y: 6.5 + 60.438 + 5, w: 41, h: 26.563 },
-      { x: 7.5 + (41 + 9.5) * 2, y: 6.5 + 60.438 + 5, w: 41, h: 26.563 },
+      { x: 7.5, y: 8 + 60.438 + 5, w: 41, h: 26.563 },
+      { x: 7.5 + 41 + 9.5, y: 8 + 60.438 + 5, w: 41, h: 26.563 },
+      { x: 7.5 + (41 + 9.5) * 2, y: 8 + 60.438 + 5, w: 41, h: 26.563 },
     ]
   }
 },
